@@ -19,6 +19,13 @@
 # program name should not be changed...
 PROGRAM    = optiboot
 
+# Uncomment this next lines to build within the arduino environment,
+# using the arduino-included avrgcc toolset (mac and pc)
+# ENV ?= arduino
+# OS ?= macosx
+# OS ?= windows
+
+
 # enter the parameters for the avrdude isp tool
 ISPTOOL	   = stk500v2
 ISPPORT	   = usb
@@ -26,6 +33,27 @@ ISPSPEED   = -b 115200
 
 MCU_TARGET = atmega168
 LDSECTION  = --section-start=.text=0x3e00
+
+ifeq ($(ENV), arduino)
+# For Arduino, we assume that we're connected to the optiboot directory
+# included with the arduino distribution, which means that the full set
+# of avr-tools are "right up there" in standard places.
+#TOOLROOT = ../../../tools
+GCCROOT = $(TOOLROOT)/avr/bin/
+AVRDUDE_CONF = -C$(TOOLROOT)/avr/etc/avrdude.conf
+else
+GCCROOT =
+AVRDUDE_CONF =
+endif
+
+ifeq ($(OS), windows)
+# On windows, SOME of the tool paths will need to have backslashes instead
+# of forward slashes (because they use windows cmd.exe for execution instead
+# of a unix/mingw shell?)
+fixpath = $(subst /,\,$1)
+else
+fixpath = $(1)
+endif
 
 # the efuse should really be 0xf8; since, however, only the lower
 # three bits of that byte are used on the atmega168, avrdude gets
@@ -37,10 +65,13 @@ LDSECTION  = --section-start=.text=0x3e00
 # lock it), but since the high two bits of the lock byte are
 # unused, avrdude would get confused.
 
-ISPFUSES    = avrdude -c $(ISPTOOL) -p $(MCU_TARGET) -P $(ISPPORT) $(ISPSPEED) \
--e -u -U lock:w:0x3f:m -U efuse:w:0x$(EFUSE):m -U hfuse:w:0x$(HFUSE):m -U lfuse:w:0x$(LFUSE):m
-ISPFLASH    = avrdude -c $(ISPTOOL) -p $(MCU_TARGET) -P $(ISPPORT) $(ISPSPEED) \
--U flash:w:$(PROGRAM)_$(TARGET).hex -U lock:w:0x0f:m
+ISPFUSES    = $(GCCROOT)avrdude $(AVRDUDE_CONF) -c $(ISPTOOL) \
+              -p $(MCU_TARGET) -P $(ISPPORT) $(ISPSPEED) \
+              -e -u -U lock:w:0x3f:m -U efuse:w:0x$(EFUSE):m \
+              -U hfuse:w:0x$(HFUSE):m -U lfuse:w:0x$(LFUSE):m
+ISPFLASH    = $(GCCROOT)avrdude $(AVRDUDE_CONF) -c $(ISPTOOL) \
+              -p $(MCU_TARGET) -P $(ISPPORT) $(ISPSPEED) \
+              -U flash:w:$(PROGRAM)_$(TARGET).hex -U lock:w:0x0f:m
 
 STK500 = "C:\Program Files\Atmel\AVR Tools\STK500\Stk500.exe"
 STK500-1 = $(STK500) -e -d$(MCU_TARGET) -pf -vf -if$(PROGRAM)_$(TARGET).hex \
@@ -53,15 +84,15 @@ OPTIMIZE = -Os -fno-inline-small-functions -fno-split-wide-types -mshort-calls
 DEFS       = 
 LIBS       =
 
-CC         = avr-gcc
+CC         = $(GCCROOT)avr-gcc
 
 # Override is only needed by avr-lib build system.
 
 override CFLAGS        = -g -Wall $(OPTIMIZE) -mmcu=$(MCU_TARGET) -DF_CPU=$(AVR_FREQ) $(DEFS)
-override LDFLAGS       = -Wl,$(LDSECTION) -Wl,--relax -nostartfiles -Wl,--gc-sections
+override LDFLAGS       = -Wl,$(LDSECTION) -Wl,--relax -nostartfiles -Wl,--gc-sections -nostdlib
 
-OBJCOPY        = avr-objcopy
-OBJDUMP        = avr-objdump
+OBJCOPY        = $(GCCROOT)avr-objcopy
+OBJDUMP        = $(call fixpath,$(GCCROOT)avr-objdump)
 
 # Test platforms
 # Virtual boot block test
@@ -294,6 +325,38 @@ atmega328_pro8_isp: LFUSE = FF
 # 2.7V brownout
 atmega328_pro8_isp: EFUSE = 05
 atmega328_pro8_isp: isp
+
+bluec88: TARGET = bluec88_8MHz
+bluec88: MCU_TARGET = atmega88p
+#bluec88: CFLAGS += '-DBAUD_RATE=57600' '-DNO_UART_DOUBLESPEED' '-DBLUECONTROLLER'
+bluec88: CFLAGS += '-DBAUD_RATE=115200' '-DBLUECONTROLLER'
+bluec88: AVR_FREQ = 8000000L
+bluec88: LDSECTION  = --section-start=.text=0x1e00
+bluec88: $(PROGRAM)_bluec88_8MHz.hex
+bluec88: $(PROGRAM)_bluec88_8MHz.lst
+
+bluec88_isp: bluec88
+bluec88_isp: TARGET = bluec88_8MHz
+bluec88_isp: HFUSE = D6 # BOD=1,8V (BODLEVEL0, EESAVE, SPIEN)
+bluec88_isp: LFUSE = E2 # internal osc, 8MHz (SUT0, CKSEL:0,2,3)
+bluec88_isp: EFUSE = FC # 512 byte bootloader (BOOTSZ0, BOOTRST) 
+bluec88_isp: isp
+
+bluec328: TARGET = bluec328_8MHz
+bluec328: MCU_TARGET = atmega328p
+#bluec328: CFLAGS += '-DBAUD_RATE=57600' '-DNO_UART_DOUBLESPEED' '-DBLUECONTROLLER'
+bluec328: CFLAGS += '-DBAUD_RATE=115200' '-DBLUECONTROLLER'
+bluec328: AVR_FREQ = 8000000L
+bluec328: LDSECTION  = --section-start=.text=0x7e00
+bluec328: $(PROGRAM)_bluec328_8MHz.hex
+bluec328: $(PROGRAM)_bluec328_8MHz.lst
+
+bluec328_isp: bluec328
+bluec328_isp: TARGET = bluec328_8MHz
+bluec328_isp: HFUSE = D6 # 512 byte bootloader (SPIEN, EESAVE, BOOTRST)
+bluec328_isp: LFUSE = E2 # internal osc, 8MHz (SUT0, CKSEL:0,2,3)
+bluec328_isp: EFUSE = FE # BOD=1,8V (BODLEVEL0)
+bluec328_isp: isp
 
 # 1MHz clocked platforms
 #

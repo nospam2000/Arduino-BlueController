@@ -25,6 +25,7 @@
 /* Fully supported:                                       */
 /*   ATmega168 based devices  (Diecimila etc)             */
 /*   ATmega328P based devices (Duemilanove etc)           */
+/*   BlueController with ATmega88PA and ATmega328P        */
 /*                                                        */
 /* Alpha test                                             */
 /*   ATmega1280 based devices (Arduino Mega)              */
@@ -164,8 +165,8 @@
 #define WATCHDOG_1S     (_BV(WDP2) | _BV(WDP1) | _BV(WDE))
 #define WATCHDOG_2S     (_BV(WDP2) | _BV(WDP1) | _BV(WDP0) | _BV(WDE))
 #ifndef __AVR_ATmega8__
-#define WATCHDOG_4S     (_BV(WDE3) | _BV(WDE))
-#define WATCHDOG_8S     (_BV(WDE3) | _BV(WDE0) | _BV(WDE))
+#define WATCHDOG_4S     (_BV(WDP3) | _BV(WDE))
+#define WATCHDOG_8S     (_BV(WDP3) | _BV(WDP0) | _BV(WDE))
 #endif
 
 /* Function Prototypes */
@@ -180,6 +181,7 @@ void verifySpace();
 static inline void flash_led(uint8_t);
 uint8_t getLen();
 static inline void watchdogReset();
+static inline void extendWatchdogPeriodAfterStartup();
 void watchdogConfig(uint8_t x);
 #ifdef SOFT_UART
 void uartDelay() __attribute__ ((naked));
@@ -201,7 +203,7 @@ void appStart() __attribute__ ((naked));
 #elif defined(__AVR_ATmega1280__)
 #define RAMSTART (0x200)
 #define NRWWSTART (0xE000)
-#elif defined(__AVR_ATmega8__) || defined(__AVR_ATmega88__)
+#elif defined(__AVR_ATmega8__) || defined(__AVR_ATmega88__) || defined(__AVR_ATmega88P__)
 #define RAMSTART (0x100)
 #define NRWWSTART (0x1800)
 #endif
@@ -209,16 +211,34 @@ void appStart() __attribute__ ((naked));
 /* C zero initialises all global variables. However, that requires */
 /* These definitions are NOT zero initialised, but that doesn't matter */
 /* This allows us to drop the zero init code, saving us memory */
-#define buff    ((uint8_t*)(RAMSTART))
-#define address (*(uint16_t*)(RAMSTART+SPM_PAGESIZE*2))
-#define length  (*(uint8_t*)(RAMSTART+SPM_PAGESIZE*2+2))
+#define buff    ((uint8_t*)(RAMSTART+2))
 #ifdef VIRTUAL_BOOT_PARTITION
-#define rstVect (*(uint16_t*)(RAMSTART+SPM_PAGESIZE*2+4))
-#define wdtVect (*(uint16_t*)(RAMSTART+SPM_PAGESIZE*2+6))
+#define rstVect (*(uint16_t*)(RAMSTART+2+SPM_PAGESIZE*2+4))
+#define wdtVect (*(uint16_t*)(RAMSTART+2+SPM_PAGESIZE*2+6))
 #endif
+
+#if defined(BLUECONTROLLER) 
+#define enterBootloaderByAppMagic (*(uint16_t*)(RAMSTART)) // when the app sets this magic and calls the bootloader, the extended timeout is enabled
+#define enterBootloaderByAppMagicLSB (*(volatile uint8_t*)(&enterBootloaderByAppMagic)) // only used to write something different than the magic to disable magic
+
+// using a register for the global variables saves some additional bytes
+register uint8_t blueCBtnNotPressed __asm__("r14"); // 1: the button has been pressed during reset
+
+register uint8_t blueCAvrdudeSynced __asm__("r13"); // 1: got initial sync sequence from avrdude
+
+register uint8_t timOverflCnt __asm__("r15"); // the number of timer1 overflows
+#endif
+
 
 /* main program starts here */
 int main(void) {
+  /*
+   * Making these local and in registers prevents the need for initializing
+   * them, and also saves space because code no longer stores to memory.
+   */
+  register uint16_t address;
+  register uint8_t  length;
+
   // After the zero init loop, this is the first code to run.
   //
   // This code makes the following assumptions:
@@ -228,21 +248,29 @@ int main(void) {
   //
   // If not, uncomment the following instructions:
   // cli();
+  // SP=RAMEND;  // This is done by hardware reset
+  /*
+   * Since we've supressed the normal startup code, we have to initialize
+   * A1 (__zero_reg__) so that it will contain 0 as expected.  Apparently
+   * there is no guarantee that GP regs are clear on either PWRUP or RST.
+   */
+  asm volatile ("clr __zero_reg__");
 
 #ifdef __AVR_ATmega8__
   SP=RAMEND;  // This is done by hardware reset
 #endif
-
-  // asm volatile ("clr __zero_reg__");
 
   uint8_t ch;
 
   // Adaboot no-wait mod
   ch = MCUSR;
   MCUSR = 0;
-  if (!(ch & _BV(EXTRF))) appStart();
+  //if (!(ch & _BV(EXTRF))) appStart();
 
-#if LED_START_FLASHES > 0
+  // Set up watchdog to trigger after 500ms
+  watchdogConfig(WATCHDOG_1S);
+
+#if (LED_START_FLASHES > 0) || defined(BLUECONTROLLER)
   // Set up Timer 1 for timeout counter
   TCCR1B = _BV(CS12) | _BV(CS10); // div 1024
 #endif
@@ -260,11 +288,31 @@ int main(void) {
 #endif
 #endif
 
-  // Set up watchdog to trigger after 500ms
-  watchdogConfig(WATCHDOG_1S);
+#if defined(BLUECONTROLLER) 
+  BLUEC_BTN_PORT |= _BV(BLUEC_BTN); // enable pull-up for BlueController button 
+  //BLUEC_BT_RESET_PORT |= _BV(BLUEC_BT_RESET); // set BlueController BTM-222 RESET line to HIGH/pullup-enable
+  //BLUEC_BT_RESET_DDR |= _BV(BLUEC_BT_RESET); /* set BlueController BTM-222 RESET line as output */
+  blueCAvrdudeSynced = 0;
+  timOverflCnt = 0;
+  blueCBtnNotPressed = (BLUEC_BTN_PIN & _BV(BLUEC_BTN));
+
+  if(enterBootloaderByAppMagic == ENTER_BL_MAGIC)
+  {
+    enterBootloaderByAppMagicLSB = 0; // disable magic mechanism for next reset to avoid endless loop
+    blueCBtnNotPressed = 0;
+  }
+  else
+  {
+    if (!(ch & _BV(EXTRF)))
+      appStart();
+  }
+#else
+    if (!(ch & _BV(EXTRF)))
+      appStart();
 
   /* Set LED pin as output */
-  LED_DDR |= _BV(LED);
+  LED_DDR |= LED_DDR_VAL;
+#endif
 
 #ifdef SOFT_UART
   /* Set TX pin as output */
@@ -281,6 +329,14 @@ int main(void) {
     /* get character from UART */
     ch = getch();
 
+#if defined(BLUECONTROLLER) 
+    if(ch == STK_GET_SYNC) {
+      // this is the initial sequence, sent by avrdude
+      verifySpace();
+      blueCAvrdudeSynced = 1;
+    }
+    else 
+#endif
     if(ch == STK_GET_PARAMETER) {
       // GET PARAMETER returns a generic 0x03 reply - enough to keep Avrdude happy
       getNch(1);
@@ -296,15 +352,13 @@ int main(void) {
     }
     else if(ch == STK_LOAD_ADDRESS) {
       // LOAD ADDRESS
-      uint16_t newAddress;
-      newAddress = getch();
-      newAddress = (newAddress & 0xff) | (getch() << 8);
+      address = getch();
+      address = (address & 0xff) | (getch() << 8);
 #ifdef RAMPZ
       // Transfer top bit to RAMPZ
-      RAMPZ = (newAddress & 0x8000) ? 1 : 0;
+      RAMPZ = (address & 0x8000) ? 1 : 0;
 #endif
-      newAddress += newAddress; // Convert from word address to byte address
-      address = newAddress;
+      address += address; // Convert from word address to byte address
       verifySpace();
     }
     else if(ch == STK_UNIVERSAL) {
@@ -318,10 +372,15 @@ int main(void) {
       uint8_t *bufPtr;
       uint16_t addrPtr;
 
-      getLen();
+      getch();			/* getlen() */
+      length = getch();
+      getch();
 
       // If we are in RWW section, immediately start page erase
-      if (address < NRWWSTART) __boot_page_erase_short((uint16_t)(void*)address);
+#if !defined(BLUECONTROLLER) 
+      if (address < NRWWSTART)
+        __boot_page_erase_short((uint16_t)(void*)address);
+#endif
       
       // While that is going on, read in page contents
       bufPtr = buff;
@@ -330,14 +389,10 @@ int main(void) {
 
       // If we are in NRWW section, page erase has to be delayed until now.
       // Todo: Take RAMPZ into account
-      if (address >= NRWWSTART) __boot_page_erase_short((uint16_t)(void*)address);
-
-      // Read command terminator, start reply
-      verifySpace();
-      
-      // If only a partial page is to be programmed, the erase might not be complete.
-      // So check that here
-      boot_spm_busy_wait();
+#if !defined(BLUECONTROLLER) 
+      if (address >= NRWWSTART)
+#endif
+        __boot_page_erase_short((uint16_t)(void*)address);
 
 #ifdef VIRTUAL_BOOT_PARTITION
       if ((uint16_t)(void*)address == 0) {
@@ -357,6 +412,10 @@ int main(void) {
         buff[1] = 0xce; // rjmp 0x1d00 instruction
       }
 #endif
+
+      // If only a partial page is to be programmed, the erase might not be complete.
+      // So check that here
+      boot_spm_busy_wait();
 
       // Copy buffer into programming buffer
       bufPtr = buff;
@@ -379,11 +438,17 @@ int main(void) {
       boot_rww_enable();
 #endif
 
+      // Read command terminator, start reply
+      verifySpace();
     }
     /* Read memory block mode, length is big endian.  */
     else if(ch == STK_READ_PAGE) {
       // READ PAGE - we only read flash
-      getLen();
+
+      getch();			/* getlen */
+      length = getch();
+      getch();
+
       verifySpace();
 #ifdef VIRTUAL_BOOT_PARTITION
       do {
@@ -503,7 +568,13 @@ uint8_t getch(void) {
       "r25"
 );
 #else
-  while(!(UCSR0A & _BV(RXC0)));
+  while(!(UCSR0A & _BV(RXC0)))
+  {
+#if defined(BLUECONTROLLER) 
+    extendWatchdogPeriodAfterStartup();
+#endif
+  }
+
   ch = UDR0;
 #endif
 
@@ -543,8 +614,20 @@ void getNch(uint8_t count) {
 }
 
 void verifySpace() {
-  if (getch() != CRC_EOP) appStart();
-  putch(STK_INSYNC);
+  if (getch() == CRC_EOP)
+  {
+    putch(STK_INSYNC);
+  }
+  else
+  {
+#if defined(BLUECONTROLLER) 
+    // ignore error when not synced, otherwise some initial garbage will exit the bootloader
+    if(blueCAvrdudeSynced)
+      appStart();
+#else
+    appStart();
+#endif
+  }
 }
 
 #if LED_START_FLASHES > 0
@@ -563,12 +646,6 @@ void flash_led(uint8_t count) {
 }
 #endif
 
-uint8_t getLen() {
-  getch();
-  length = getch();
-  return getch();
-}
-
 // Watchdog functions. These are only safe with interrupts turned off.
 void watchdogReset() {
   __asm__ __volatile__ (
@@ -581,7 +658,32 @@ void watchdogConfig(uint8_t x) {
   WDTCSR = x;
 }
 
+
+#if defined(BLUECONTROLLER) 
+/* the watchdog time after startup is too small when the reset button has to be pressed manually
+before starting the download. Additionally it takes some time to establish the bluetooth connection
+and the Arduino IDE compiles the sketch before download. */
+void extendWatchdogPeriodAfterStartup() {
+  if(!blueCBtnNotPressed && timOverflCnt < (F_CPU/(1024*65536/BLUEC_WAITTIME)))
+  {
+    // each timer overflow takes 8.39 seconds @8MHz
+    if(TIFR1 & _BV(TOV1))
+    {
+      TIFR1 = _BV(TOV1);
+      timOverflCnt++;
+    }
+
+    // avoid watchdog condition when button was pressed directly after reset
+    // TODO: avoid endless loop when INT0/PD2 is used as normal input => we need a timeout in this case
+    // IDEA: use LED output as input for the button, so no additional port pin is needed
+    watchdogReset();
+  }
+}
+#endif
+
 void appStart() {
+  LED_DDR |= _BV(LED); // switch LED to output
+  LED_PORT &= ~_BV(LED); // switch LED off
   watchdogConfig(WATCHDOG_OFF);
   __asm__ __volatile__ (
 #ifdef VIRTUAL_BOOT_PARTITION

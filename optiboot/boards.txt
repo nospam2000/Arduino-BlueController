@@ -168,6 +168,42 @@ atmega88o.build.f_cpu=16000000L
 atmega88o.build.core=arduino:arduino
 
 ##############################################################
+
+bluecontroller88o.name=BlueController BCA8-BTM w/ ATmega88PA
+bluecontroller88o.upload.protocol=stk500v1
+bluecontroller88o.upload.maximum_size=7680
+bluecontroller88o.upload.speed=115200
+bluecontroller88o.upload.disable_flushing=true
+bluecontroller88o.bootloader.low_fuses=0xe2
+bluecontroller88o.bootloader.high_fuses=0xd6
+bluecontroller88o.bootloader.extended_fuses=0xfc
+bluecontroller88o.bootloader.unlock_bits=0x3F
+bluecontroller88o.bootloader.lock_bits=0x2F
+bluecontroller88o.bootloader.path=optiboot
+bluecontroller88o.bootloader.file=optiboot_bluec88_8MHz.hex
+bluecontroller88o.build.mcu=atmega88p
+bluecontroller88o.build.f_cpu=8000000L
+bluecontroller88o.build.core=bluecontroller:bluecontroller
+
+##############################################################
+
+bluecontroller328o.name=BlueController BCA8-BTM w/ ATmega328P
+bluecontroller328o.upload.protocol=stk500v1
+bluecontroller328o.upload.maximum_size=32256
+bluecontroller328o.upload.speed=115200
+bluecontroller328o.upload.disable_flushing=true
+bluecontroller328o.bootloader.low_fuses=0xe2
+bluecontroller328o.bootloader.high_fuses=0xd6
+bluecontroller328o.bootloader.extended_fuses=0xfe
+bluecontroller328o.bootloader.unlock_bits=0x3F
+bluecontroller328o.bootloader.lock_bits=0x2F
+bluecontroller328o.bootloader.path=optiboot
+bluecontroller328o.bootloader.file=optiboot_bluec328_8MHz.hex
+bluecontroller328o.build.mcu=atmega328p
+bluecontroller328o.build.f_cpu=8000000L
+bluecontroller328o.build.core=bluecontroller:bluecontroller
+
+##############################################################
 #
 # sanguinoo.name=[Optiboot] Sanguino (work in progress)
 # sanguinoo.upload.protocol=stk500
