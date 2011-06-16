@@ -39,7 +39,7 @@ void setup()
   sendBtCmd("ATQ1"); // disable result code
   sendBtCmd("ATC1"); // enable flow control: without this, avrdude under Windows will hang
   sendBtCmd("ATR1"); // device is slave  
-  sendBtCmd("ATN=Blue Controller "); // set new name
+  sendBtCmd("ATN=BlueController"); // set new name
   sendBtCmd("ATP=1234"); // set PIN
   sendBtCmd("ATD0"); // accept connections from any bt device
   sendBtCmd("ATX0"); // disable escape character (default)
