@@ -8,13 +8,13 @@
 ./omake pro20
 ./omake diecimila
 ./omake ng
+./omake atmega328
+./omake atmega328_pro8
+./omake sanguino
 ./omake mega
 ./omake atmega8
 ./omake atmega88
-./omake atmega328
-./omake atmega328_pro8
 ./omake luminet
-./omake sanguino
 ./omake bluec88
 ./omake bluec328
 
