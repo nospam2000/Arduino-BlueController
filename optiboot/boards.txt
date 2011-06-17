@@ -2,206 +2,227 @@
 # http://optiboot.googlecode.com
 # Peter Knight, 2010
 
-#bluec  ##############################################################
-#bluec  
-#bluec  atmega328o.name=[Optiboot] Arduino Duemilanove or Nano w/ ATmega328
-#bluec  atmega328o.upload.protocol=stk500
-#bluec  atmega328o.upload.maximum_size=32256
-#bluec  atmega328o.upload.speed=115200
-#bluec  atmega328o.bootloader.low_fuses=0xff
-#bluec  atmega328o.bootloader.high_fuses=0xde
-#bluec  atmega328o.bootloader.extended_fuses=0x05
-#bluec  atmega328o.bootloader.path=optiboot
-#bluec  atmega328o.bootloader.file=optiboot_atmega328.hex
-#bluec  atmega328o.bootloader.unlock_bits=0x3F
-#bluec  atmega328o.bootloader.lock_bits=0x0F
-#bluec  atmega328o.build.mcu=atmega328p
-#bluec  atmega328o.build.f_cpu=16000000L
-#bluec  atmega328o.build.core=arduino:arduino
-#bluec  
-#bluec  ##############################################################
-#bluec  
-#bluec  diecimilao.name=[Optiboot] Arduino Diecimila, Duemilanove, Nano, NG w/ ATmega168
-#bluec  diecimilao.upload.protocol=stk500
-#bluec  diecimilao.upload.maximum_size=15360
-#bluec  diecimilao.upload.speed=115200
-#bluec  diecimilao.bootloader.low_fuses=0xff
-#bluec  diecimilao.bootloader.high_fuses=0xdd
-#bluec  diecimilao.bootloader.extended_fuses=0x04
-#bluec  diecimilao.bootloader.path=optiboot
-#bluec  diecimilao.bootloader.file=optiboot_diecimila.hex
-#bluec  diecimilao.bootloader.unlock_bits=0x3F
-#bluec  diecimilao.bootloader.lock_bits=0x0F
-#bluec  diecimilao.build.mcu=atmega168
-#bluec  diecimilao.build.f_cpu=16000000L
-#bluec  diecimilao.build.core=arduino:arduino
-#bluec  
-#bluec  ##############################################################
-#bluec  
-#bluec  minio.name=[Optiboot] Arduino Mini
-#bluec  minio.upload.protocol=stk500
-#bluec  minio.upload.maximum_size=15360
-#bluec  minio.upload.speed=115200
-#bluec  minio.bootloader.low_fuses=0xff
-#bluec  minio.bootloader.high_fuses=0xdd
-#bluec  minio.bootloader.extended_fuses=0x02
-#bluec  minio.bootloader.path=optiboot
-#bluec  minio.bootloader.file=optiboot_ng.hex
-#bluec  minio.bootloader.unlock_bits=0x3F
-#bluec  minio.bootloader.lock_bits=0x0F
-#bluec  minio.build.mcu=atmega168
-#bluec  minio.build.f_cpu=16000000L
-#bluec  minio.build.core=arduino:arduino
-#bluec  
-#bluec  ##############################################################
-#bluec  
-#bluec  lilypad328o.name=[Optiboot] LilyPad Arduino w/ ATmega328
-#bluec  lilypad328o.upload.protocol=stk500
-#bluec  lilypad328o.upload.maximum_size=31744
-#bluec  lilypad328o.upload.speed=115200
-#bluec  lilypad328o.bootloader.low_fuses=0xff
-#bluec  lilypad328o.bootloader.high_fuses=0xdc
-#bluec  lilypad328o.bootloader.extended_fuses=0x05
-#bluec  lilypad328o.bootloader.path=optiboot
-#bluec  lilypad328o.bootloader.file=optiboot_atmega328_pro_8MHz.hex
-#bluec  lilypad328o.bootloader.unlock_bits=0x3F
-#bluec  lilypad328o.bootloader.lock_bits=0x0F
-#bluec  lilypad328o.build.mcu=atmega328p
-#bluec  lilypad328o.build.f_cpu=8000000L
-#bluec  lilypad328o.build.core=arduino:arduino
-#bluec  
-#bluec  ##############################################################
-#bluec  
-#bluec  lilypado.name=[Optiboot] LilyPad Arduino w/ ATmega168
-#bluec  lilypado.upload.protocol=stk500
-#bluec  lilypado.upload.maximum_size=14336
-#bluec  lilypado.upload.speed=115200
-#bluec  lilypado.bootloader.low_fuses=0xe2
-#bluec  lilypado.bootloader.high_fuses=0xdd
-#bluec  lilypado.bootloader.extended_fuses=0x02
-#bluec  lilypado.bootloader.path=lilypad
-#bluec  lilypado.bootloader.file=optiboot_lilypad.hex
-#bluec  lilypado.bootloader.unlock_bits=0x3F
-#bluec  lilypado.bootloader.lock_bits=0x0F
-#bluec  lilypado.build.mcu=atmega168
-#bluec  lilypado.build.f_cpu=8000000L
-#bluec  lilypado.build.core=arduino:arduino
-#bluec  
-#bluec  ##############################################################
-#bluec  
-#bluec  pro328o.name=[Optiboot] Arduino Pro or Pro Mini (3.3V, 8 MHz) w/ ATmega328
-#bluec  pro328o.upload.protocol=stk500
-#bluec  pro328o.upload.maximum_size=30720
-#bluec  pro328o.upload.speed=115200
-#bluec  pro328o.bootloader.low_fuses=0xff
-#bluec  pro328o.bootloader.high_fuses=0xdc
-#bluec  pro328o.bootloader.extended_fuses=0x05
-#bluec  pro328o.bootloader.path=optiboot
-#bluec  pro328o.bootloader.file=optiboot_atmega328_pro_8MHz.hex
-#bluec  pro328o.bootloader.unlock_bits=0x3F
-#bluec  pro328o.bootloader.lock_bits=0x0F
-#bluec  pro328o.build.mcu=atmega328p
-#bluec  pro328o.build.f_cpu=8000000L
-#bluec  pro328o.build.core=arduino:arduino
-#bluec  
-#bluec  ##############################################################
-#bluec  
-#bluec  proo.name=[Optiboot] Arduino Pro or Pro Mini (3.3V, 8 MHz) w/ ATmega168
-#bluec  proo.upload.protocol=stk500
-#bluec  proo.upload.maximum_size=14336
-#bluec  proo.upload.speed=115200
-#bluec  proo.bootloader.low_fuses=0xc6
-#bluec  proo.bootloader.high_fuses=0xdd
-#bluec  proo.bootloader.extended_fuses=0x02
-#bluec  proo.bootloader.path=optiboot
-#bluec  proo.bootloader.file=optiboot_pro_8MHz.hex
-#bluec  proo.bootloader.unlock_bits=0x3F
-#bluec  proo.bootloader.lock_bits=0x0F
-#bluec  proo.build.mcu=atmega168
-#bluec  proo.build.f_cpu=8000000L
-#bluec  proo.build.core=arduino:arduino
-#bluec  
-#bluec  ##############################################################
-#bluec  
-#bluec  megao.name=[Optiboot] Arduino Mega
-#bluec  megao.upload.protocol=stk500
-#bluec  megao.upload.maximum_size=130048
-#bluec  megao.upload.speed=115200
-#bluec  megao.bootloader.low_fuses=0xff
-#bluec  megao.bootloader.high_fuses=0xde
-#bluec  megao.bootloader.extended_fuses=0xf5
-#bluec  megao.bootloader.path=optiboot
-#bluec  megao.bootloader.file=optiboot_atmega1280.hex
-#bluec  megao.bootloader.unlock_bits=0x3F
-#bluec  megao.bootloader.lock_bits=0x0F
-#bluec  megao.build.mcu=atmega1280
-#bluec  megao.build.f_cpu=16000000L
-#bluec  megao.build.core=arduino:arduino
-#bluec  
-#bluec  atmega8o.name=[Optiboot] Arduino NG or older w/ ATmega8
-#bluec  atmega8o.upload.protocol=stk500
-#bluec  atmega8o.upload.maximum_size=7680
-#bluec  atmega8o.upload.speed=115200
-#bluec  atmega8o.bootloader.low_fuses=0xbf
-#bluec  atmega8o.bootloader.high_fuses=0xdc
-#bluec  atmega8o.bootloader.path=optiboot
-#bluec  atmega8o.bootloader.file=optiboot_atmega8.hex
-#bluec  atmega8o.bootloader.unlock_bits=0x3F
-#bluec  atmega8o.bootloader.lock_bits=0x0F
-#bluec  atmega8o.build.mcu=atmega8
-#bluec  atmega8o.build.f_cpu=16000000L
-#bluec  atmega8o.build.core=arduino:arduino
-#bluec  
-#bluec  atmega88o.name=[Optiboot] Arduino NG or older w/ ATmega88
-#bluec  atmega88o.upload.protocol=stk500
-#bluec  atmega88o.upload.maximum_size=7680
-#bluec  atmega88o.upload.speed=115200
-#bluec  atmega88o.bootloader.low_fuses=0xff
-#bluec  atmega88o.bootloader.high_fuses=0xdd
-#bluec  atmega88o.bootloader.extended_fuses=0x04
-#bluec  atmega88o.bootloader.path=optiboot
-#bluec  atmega88o.bootloader.file=optiboot_atmega88.hex
-#bluec  atmega88o.bootloader.unlock_bits=0x3F
-#bluec  atmega88o.bootloader.lock_bits=0x0F
-#bluec  atmega88o.build.mcu=atmega88
-#bluec  atmega88o.build.f_cpu=16000000L
-#bluec  atmega88o.build.core=arduino:arduino
+##############################################################
+
+atmega328o.name=[Optiboot] Arduino Duemilanove or Nano w/ ATmega328
+atmega328o.upload.protocol=stk500
+atmega328o.upload.maximum_size=32256
+atmega328o.upload.speed=115200
+atmega328o.bootloader.low_fuses=0xff
+atmega328o.bootloader.high_fuses=0xde
+atmega328o.bootloader.extended_fuses=0x05
+atmega328o.bootloader.path=optiboot
+atmega328o.bootloader.file=optiboot_atmega328.hex
+atmega328o.bootloader.unlock_bits=0x3F
+atmega328o.bootloader.lock_bits=0x0F
+atmega328o.build.mcu=atmega328p
+atmega328o.build.f_cpu=16000000L
+atmega328o.build.core=arduino:arduino
 
 ##############################################################
 
-bluecontroller88o.name=BlueController BCA8-BTM w/ ATmega88PA
-bluecontroller88o.upload.protocol=stk500v1
-bluecontroller88o.upload.maximum_size=7680
-bluecontroller88o.upload.speed=115200
-bluecontroller88o.upload.disable_flushing=true
-bluecontroller88o.bootloader.low_fuses=0xe2
-bluecontroller88o.bootloader.high_fuses=0xd6
-bluecontroller88o.bootloader.extended_fuses=0xfc
-bluecontroller88o.bootloader.unlock_bits=0x3F
-bluecontroller88o.bootloader.lock_bits=0x2F
-bluecontroller88o.bootloader.path=optiboot
-bluecontroller88o.bootloader.file=optiboot_bluec88_8MHz.hex
-bluecontroller88o.build.mcu=atmega88p
-bluecontroller88o.build.f_cpu=8000000L
-bluecontroller88o.build.core=optiboot:bluecontroller
+diecimilao.name=[Optiboot] Arduino Diecimila, Duemilanove, Nano, NG w/ ATmega168
+diecimilao.upload.protocol=stk500
+diecimilao.upload.maximum_size=15360
+diecimilao.upload.speed=115200
+diecimilao.bootloader.low_fuses=0xff
+diecimilao.bootloader.high_fuses=0xdd
+diecimilao.bootloader.extended_fuses=0x04
+diecimilao.bootloader.path=optiboot
+diecimilao.bootloader.file=optiboot_diecimila.hex
+diecimilao.bootloader.unlock_bits=0x3F
+diecimilao.bootloader.lock_bits=0x0F
+diecimilao.build.mcu=atmega168
+diecimilao.build.f_cpu=16000000L
+diecimilao.build.core=arduino:arduino
 
 ##############################################################
 
-bluecontroller328o.name=BlueController BCA8-BTM w/ ATmega328P
-bluecontroller328o.upload.protocol=stk500v1
-bluecontroller328o.upload.maximum_size=32256
-bluecontroller328o.upload.speed=115200
-bluecontroller328o.upload.disable_flushing=true
-bluecontroller328o.bootloader.low_fuses=0xe2
-bluecontroller328o.bootloader.high_fuses=0xd6
-bluecontroller328o.bootloader.extended_fuses=0xfe
-bluecontroller328o.bootloader.unlock_bits=0x3F
-bluecontroller328o.bootloader.lock_bits=0x2F
-bluecontroller328o.bootloader.path=optiboot
-bluecontroller328o.bootloader.file=optiboot_bluec328_8MHz.hex
-bluecontroller328o.build.mcu=atmega328p
-bluecontroller328o.build.f_cpu=8000000L
-bluecontroller328o.build.core=optiboot:bluecontroller
+minio.name=[Optiboot] Arduino Mini
+minio.upload.protocol=stk500
+minio.upload.maximum_size=15360
+minio.upload.speed=115200
+minio.bootloader.low_fuses=0xff
+minio.bootloader.high_fuses=0xdd
+minio.bootloader.extended_fuses=0x02
+minio.bootloader.path=optiboot
+minio.bootloader.file=optiboot_ng.hex
+minio.bootloader.unlock_bits=0x3F
+minio.bootloader.lock_bits=0x0F
+minio.build.mcu=atmega168
+minio.build.f_cpu=16000000L
+minio.build.core=arduino:arduino
+
+##############################################################
+
+lilypad328o.name=[Optiboot] LilyPad Arduino w/ ATmega328
+lilypad328o.upload.protocol=stk500
+lilypad328o.upload.maximum_size=31744
+lilypad328o.upload.speed=115200
+lilypad328o.bootloader.low_fuses=0xff
+lilypad328o.bootloader.high_fuses=0xdc
+lilypad328o.bootloader.extended_fuses=0x05
+lilypad328o.bootloader.path=optiboot
+lilypad328o.bootloader.file=optiboot_atmega328_pro_8MHz.hex
+lilypad328o.bootloader.unlock_bits=0x3F
+lilypad328o.bootloader.lock_bits=0x0F
+lilypad328o.build.mcu=atmega328p
+lilypad328o.build.f_cpu=8000000L
+lilypad328o.build.core=arduino:arduino
+
+##############################################################
+
+lilypado.name=[Optiboot] LilyPad Arduino w/ ATmega168
+lilypado.upload.protocol=stk500
+lilypado.upload.maximum_size=14336
+lilypado.upload.speed=115200
+lilypado.bootloader.low_fuses=0xe2
+lilypado.bootloader.high_fuses=0xdd
+lilypado.bootloader.extended_fuses=0x02
+lilypado.bootloader.path=lilypad
+lilypado.bootloader.file=optiboot_lilypad.hex
+lilypado.bootloader.unlock_bits=0x3F
+lilypado.bootloader.lock_bits=0x0F
+lilypado.build.mcu=atmega168
+lilypado.build.f_cpu=8000000L
+lilypado.build.core=arduino:arduino
+
+##############################################################
+
+pro328o.name=[Optiboot] Arduino Pro or Pro Mini (3.3V, 8 MHz) w/ ATmega328
+pro328o.upload.protocol=stk500
+pro328o.upload.maximum_size=30720
+pro328o.upload.speed=115200
+pro328o.bootloader.low_fuses=0xff
+pro328o.bootloader.high_fuses=0xdc
+pro328o.bootloader.extended_fuses=0x05
+pro328o.bootloader.path=optiboot
+pro328o.bootloader.file=optiboot_atmega328_pro_8MHz.hex
+pro328o.bootloader.unlock_bits=0x3F
+pro328o.bootloader.lock_bits=0x0F
+pro328o.build.mcu=atmega328p
+pro328o.build.f_cpu=8000000L
+pro328o.build.core=arduino:arduino
+
+##############################################################
+
+proo.name=[Optiboot] Arduino Pro or Pro Mini (3.3V, 8 MHz) w/ ATmega168
+proo.upload.protocol=stk500
+proo.upload.maximum_size=14336
+proo.upload.speed=115200
+proo.bootloader.low_fuses=0xc6
+proo.bootloader.high_fuses=0xdd
+proo.bootloader.extended_fuses=0x02
+proo.bootloader.path=optiboot
+proo.bootloader.file=optiboot_pro_8MHz.hex
+proo.bootloader.unlock_bits=0x3F
+proo.bootloader.lock_bits=0x0F
+proo.build.mcu=atmega168
+proo.build.f_cpu=8000000L
+proo.build.core=arduino:arduino
+
+##############################################################
+
+megao.name=[Optiboot] Arduino Mega
+megao.upload.protocol=stk500
+megao.upload.maximum_size=130048
+megao.upload.speed=115200
+megao.bootloader.low_fuses=0xff
+megao.bootloader.high_fuses=0xde
+megao.bootloader.extended_fuses=0xf5
+megao.bootloader.path=optiboot
+megao.bootloader.file=optiboot_atmega1280.hex
+megao.bootloader.unlock_bits=0x3F
+megao.bootloader.lock_bits=0x0F
+megao.build.mcu=atmega1280
+megao.build.f_cpu=16000000L
+megao.build.core=arduino:arduino
+
+atmega8o.name=[Optiboot] Arduino NG or older w/ ATmega8
+atmega8o.upload.protocol=stk500
+atmega8o.upload.maximum_size=7680
+atmega8o.upload.speed=115200
+atmega8o.bootloader.low_fuses=0xbf
+atmega8o.bootloader.high_fuses=0xdc
+atmega8o.bootloader.path=optiboot
+atmega8o.bootloader.file=optiboot_atmega8.hex
+atmega8o.bootloader.unlock_bits=0x3F
+atmega8o.bootloader.lock_bits=0x0F
+atmega8o.build.mcu=atmega8
+atmega8o.build.f_cpu=16000000L
+atmega8o.build.core=arduino:arduino
+
+atmega88o.name=[Optiboot] Arduino NG or older w/ ATmega88
+atmega88o.upload.protocol=stk500
+atmega88o.upload.maximum_size=7680
+atmega88o.upload.speed=115200
+atmega88o.bootloader.low_fuses=0xff
+atmega88o.bootloader.high_fuses=0xdd
+atmega88o.bootloader.extended_fuses=0x04
+atmega88o.bootloader.path=optiboot
+atmega88o.bootloader.file=optiboot_atmega88.hex
+atmega88o.bootloader.unlock_bits=0x3F
+atmega88o.bootloader.lock_bits=0x0F
+atmega88o.build.mcu=atmega88
+atmega88o.build.f_cpu=16000000L
+atmega88o.build.core=arduino:arduino
+
+##############################################################
+# not officially supported:
+#  - needs adapted avrdude with "atmega88p" entry
+#  - libs and Arduino code sometimes depends on defines like __AVR_ATmega88__,
+#    but the compiler sets the define __AVR_ATmega88P__  
+#bluecontroller88_115200o.name=BlueController BCA8-BTM w/ ATmega88PA, 115200bps
+#bluecontroller88_115200o.upload.protocol=stk500v1
+#bluecontroller88_115200o.upload.maximum_size=7680
+#bluecontroller88_115200o.upload.speed=115200
+#bluecontroller88_115200o.upload.disable_flushing=true
+#bluecontroller88_115200o.bootloader.low_fuses=0xe2
+#bluecontroller88_115200o.bootloader.high_fuses=0xd6
+#bluecontroller88_115200o.bootloader.extended_fuses=0xfc
+#bluecontroller88_115200o.bootloader.unlock_bits=0x3F
+#bluecontroller88_115200o.bootloader.lock_bits=0x2F
+#bluecontroller88_115200o.bootloader.path=optiboot
+#bluecontroller88_115200o.bootloader.file=optiboot_bluec88_8MHz_115200bps.hex
+#bluecontroller88_115200o.build.mcu=atmega88p
+#bluecontroller88_115200o.build.f_cpu=8000000L
+#bluecontroller88_115200o.build.core=optiboot:bluecontroller
+
+##############################################################
+
+bluecontroller328_115200o.name=BlueController BCA8-BTM w/ ATmega328P, 115200bps
+bluecontroller328_115200o.upload.protocol=stk500v1
+bluecontroller328_115200o.upload.maximum_size=32256
+bluecontroller328_115200o.upload.speed=115200
+bluecontroller328_115200o.upload.disable_flushing=true
+bluecontroller328_115200o.bootloader.low_fuses=0xe2
+bluecontroller328_115200o.bootloader.high_fuses=0xd6
+bluecontroller328_115200o.bootloader.extended_fuses=0xfe
+bluecontroller328_115200o.bootloader.unlock_bits=0x3F
+bluecontroller328_115200o.bootloader.lock_bits=0x2F
+bluecontroller328_115200o.bootloader.path=optiboot
+bluecontroller328_115200o.bootloader.file=optiboot_bluec328_8MHz_115200bps.hex
+bluecontroller328_115200o.build.mcu=atmega328p
+bluecontroller328_115200o.build.f_cpu=8000000L
+bluecontroller328_115200o.build.core=optiboot:bluecontroller
+
+##############################################################
+
+bluecontroller328_19200o.name=BlueController BCA8-BTM w/ ATmega328P, 19200bps
+bluecontroller328_19200o.upload.protocol=stk500v1
+bluecontroller328_19200o.upload.maximum_size=32256
+bluecontroller328_19200o.upload.speed=19200
+bluecontroller328_19200o.upload.disable_flushing=true
+bluecontroller328_19200o.bootloader.low_fuses=0xe2
+bluecontroller328_19200o.bootloader.high_fuses=0xd6
+bluecontroller328_19200o.bootloader.extended_fuses=0xfe
+bluecontroller328_19200o.bootloader.unlock_bits=0x3F
+bluecontroller328_19200o.bootloader.lock_bits=0x2F
+bluecontroller328_19200o.bootloader.path=optiboot
+bluecontroller328_19200o.bootloader.file=optiboot_bluec328_8MHz_19200bps.hex
+bluecontroller328_19200o.build.mcu=atmega328p
+bluecontroller328_19200o.build.f_cpu=8000000L
+bluecontroller328_19200o.build.core=optiboot:bluecontroller
 
 ##############################################################
 #
