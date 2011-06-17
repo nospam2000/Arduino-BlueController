@@ -326,37 +326,54 @@ atmega328_pro8_isp: LFUSE = FF
 atmega328_pro8_isp: EFUSE = 05
 atmega328_pro8_isp: isp
 
-bluec88: TARGET = bluec88_8MHz
-bluec88: MCU_TARGET = atmega88p
-#bluec88: CFLAGS += '-DBAUD_RATE=57600' '-DNO_UART_DOUBLESPEED' '-DBLUECONTROLLER'
-bluec88: CFLAGS += '-DBAUD_RATE=115200' '-DBLUECONTROLLER' '-DNRWWSECTIONFAVORSIZE'
-bluec88: AVR_FREQ = 8000000L
-bluec88: LDSECTION  = --section-start=.text=0x1e00
-bluec88: $(PROGRAM)_bluec88_8MHz.hex
-bluec88: $(PROGRAM)_bluec88_8MHz.lst
 
-bluec88_isp: bluec88
-bluec88_isp: TARGET = bluec88_8MHz
-bluec88_isp: HFUSE = D6 # BOD=1,8V (BODLEVEL0, EESAVE, SPIEN)
-bluec88_isp: LFUSE = E2 # internal osc, 8MHz (SUT0, CKSEL:0,2,3)
-bluec88_isp: EFUSE = FC # 512 byte bootloader (BOOTSZ0, BOOTRST) 
-bluec88_isp: isp
+bluec88_115200: TARGET = bluec88_8MHz_115200bps
+bluec88_115200: MCU_TARGET = atmega88p
+# bluec88_115200: CFLAGS += '-DBAUD_RATE=115200' '-DBLUECONTROLLER' '-DNRWWSECTIONFAVORSIZE'
+bluec88_115200: CFLAGS += '-DBAUD_RATE=115200' '-DBLUECONTROLLER'
+bluec88_115200: AVR_FREQ = 8000000L
+bluec88_115200: LDSECTION  = --section-start=.text=0x1e00
+bluec88_115200: $(PROGRAM)_bluec88_8MHz_115200bps.hex
+bluec88_115200: $(PROGRAM)_bluec88_8MHz_115200bps.lst
+bluec88_115200_isp: bluec88_115200
+bluec88_115200_isp: TARGET = bluec88_8MHz_115200bps
+bluec88_115200_isp: HFUSE = D6 # BOD=1,8V (BODLEVEL0, EESAVE, SPIEN)
+bluec88_115200_isp: LFUSE = E2 # internal osc, 8MHz (SUT0, CKSEL:0,2,3)
+bluec88_115200_isp: EFUSE = FC # 512 byte bootloader (BOOTSZ0, BOOTRST) 
+bluec88_115200_isp: isp
 
-bluec328: TARGET = bluec328_8MHz
-bluec328: MCU_TARGET = atmega328p
-#bluec328: CFLAGS += '-DBAUD_RATE=57600' '-DNO_UART_DOUBLESPEED' '-DBLUECONTROLLER'
-bluec328: CFLAGS += '-DBAUD_RATE=115200' '-DBLUECONTROLLER' '-DNRWWSECTIONFAVORSIZE'
-bluec328: AVR_FREQ = 8000000L
-bluec328: LDSECTION  = --section-start=.text=0x7e00
-bluec328: $(PROGRAM)_bluec328_8MHz.hex
-bluec328: $(PROGRAM)_bluec328_8MHz.lst
 
-bluec328_isp: bluec328
-bluec328_isp: TARGET = bluec328_8MHz
-bluec328_isp: HFUSE = D6 # 512 byte bootloader (SPIEN, EESAVE, BOOTRST)
-bluec328_isp: LFUSE = E2 # internal osc, 8MHz (SUT0, CKSEL:0,2,3)
-bluec328_isp: EFUSE = FE # BOD=1,8V (BODLEVEL0)
-bluec328_isp: isp
+bluec328_115200: TARGET = bluec328_8MHz_115200bps
+bluec328_115200: MCU_TARGET = atmega328p
+#bluec328_115200: CFLAGS += '-DBAUD_RATE=115200' '-DBLUECONTROLLER' '-DNRWWSECTIONFAVORSIZE'
+bluec328_115200: CFLAGS += '-DBAUD_RATE=115200' '-DBLUECONTROLLER'
+bluec328_115200: AVR_FREQ = 8000000L
+bluec328_115200: LDSECTION  = --section-start=.text=0x7e00
+bluec328_115200: $(PROGRAM)_bluec328_8MHz_115200bps.hex
+bluec328_115200: $(PROGRAM)_bluec328_8MHz_115200bps.lst
+bluec328_115200_isp: bluec328_115200
+bluec328_115200_isp: TARGET = bluec328_8MHz_115200bps
+bluec328_115200_isp: HFUSE = D6 # 512 byte bootloader (SPIEN, EESAVE, BOOTRST)
+bluec328_115200_isp: LFUSE = E2 # internal osc, 8MHz (SUT0, CKSEL:0,2,3)
+bluec328_115200_isp: EFUSE = FE # BOD=1,8V (BODLEVEL0)
+bluec328_115200_isp: isp
+
+
+bluec328_19200: TARGET = bluec328_8MHz_19200bps
+bluec328_19200: MCU_TARGET = atmega328p
+#bluec328_19200: CFLAGS += '-DBAUD_RATE=115200' '-DBLUECONTROLLER' '-DNRWWSECTIONFAVORSIZE'
+bluec328_19200: CFLAGS += '-DBAUD_RATE=19200' '-DBLUECONTROLLER'
+bluec328_19200: AVR_FREQ = 8000000L
+bluec328_19200: LDSECTION  = --section-start=.text=0x7e00
+bluec328_19200: $(PROGRAM)_bluec328_8MHz_19200bps.hex
+bluec328_19200: $(PROGRAM)_bluec328_8MHz_19200bps.lst
+bluec328_19200_isp: bluec328
+bluec328_19200_isp: TARGET = bluec328_8MHz_19200bps
+bluec328_19200_isp: HFUSE = D6 # 512 byte bootloader (SPIEN, EESAVE, BOOTRST)
+bluec328_19200_isp: LFUSE = E2 # internal osc, 8MHz (SUT0, CKSEL:0,2,3)
+bluec328_19200_isp: EFUSE = FE # BOD=1,8V (BODLEVEL0)
+bluec328_19200_isp: isp
+
 
 # 1MHz clocked platforms
 #
