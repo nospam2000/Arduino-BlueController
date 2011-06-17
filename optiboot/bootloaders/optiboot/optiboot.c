@@ -378,7 +378,7 @@ int main(void) {
 
       // If we are in RWW section, immediately start page erase
 #if !defined(BLUECONTROLLER) 
-      if (address < NRWWSTART)
+      if ((uint8_t)(address >> 8) < (uint8_t)(NRWWSTART >> 8))
         __boot_page_erase_short((uint16_t)(void*)address);
 #endif
       
@@ -390,7 +390,7 @@ int main(void) {
       // If we are in NRWW section, page erase has to be delayed until now.
       // Todo: Take RAMPZ into account
 #if !defined(BLUECONTROLLER) 
-      if (address >= NRWWSTART)
+      if (!((uint8_t)(address >> 8) < (uint8_t)(NRWWSTART >> 8)))
 #endif
         __boot_page_erase_short((uint16_t)(void*)address);
 
