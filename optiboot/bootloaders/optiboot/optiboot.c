@@ -148,11 +148,12 @@
 #endif
 
 /* Switch in soft UART for hard baud rates */
-#if (F_CPU/BAUD_RATE) > 280 // > 57600 for 16MHz
-#ifndef SOFT_UART
-#define SOFT_UART
-#endif
-#endif
+// Michael.Dreher42: I don't understand why low baudrates should always use SOFT_UART. I need 19200 bps@8Mhz with hw UART => let the Makefile decide!
+//#if (F_CPU/BAUD_RATE) > 280 // > 57600 for 16MHz
+//#ifndef SOFT_UART
+//#define SOFT_UART
+//#endif
+//#endif
 
 /* Watchdog settings */
 #define WATCHDOG_OFF    (0)

@@ -367,7 +367,7 @@ bluec328_19200: AVR_FREQ = 8000000L
 bluec328_19200: LDSECTION  = --section-start=.text=0x7e00
 bluec328_19200: $(PROGRAM)_bluec328_8MHz_19200bps.hex
 bluec328_19200: $(PROGRAM)_bluec328_8MHz_19200bps.lst
-bluec328_19200_isp: bluec328
+bluec328_19200_isp: bluec328_19200
 bluec328_19200_isp: TARGET = bluec328_8MHz_19200bps
 bluec328_19200_isp: HFUSE = D6 # 512 byte bootloader (SPIEN, EESAVE, BOOTRST)
 bluec328_19200_isp: LFUSE = E2 # internal osc, 8MHz (SUT0, CKSEL:0,2,3)

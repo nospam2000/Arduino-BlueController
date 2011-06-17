@@ -15,6 +15,6 @@ make mega
 make atmega8
 make atmega88
 make luminet
-make bluec88
-make bluec328
-
+make bluec88_115200
+make bluec328_19200
+make bluec328_115200

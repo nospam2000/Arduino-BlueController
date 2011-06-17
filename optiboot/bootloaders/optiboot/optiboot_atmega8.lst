@@ -13,7 +13,7 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
   4 .debug_abbrev 0000017f  00000000  00000000  00000502  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_line   00000440  00000000  00000000  00000681  2**0
+  5 .debug_line   00000443  00000000  00000000  00000681  2**0
                   CONTENTS, READONLY, DEBUGGING
   6 .debug_frame  00000080  00000000  00000000  00000ac4  2**2
                   CONTENTS, READONLY, DEBUGGING
@@ -260,7 +260,7 @@ void watchdogReset() {
     1eb0:	67 d0       	rcall	.+206    	; 0x1f80 <getch>
 
       // If we are in RWW section, immediately start page erase
-#if !defined(BLUECONTROLLER) 
+#if !defined(NRWWSECTIONFAVORSIZE) 
       if ((uint8_t)(address >> 8) < (uint8_t)(NRWWSTART >> 8))
     1eb2:	8d 2d       	mov	r24, r13
     1eb4:	99 27       	eor	r25, r25
@@ -287,7 +287,7 @@ void watchdogReset() {
 
       // If we are in NRWW section, page erase has to be delayed until now.
       // Todo: Take RAMPZ into account
-#if !defined(BLUECONTROLLER) 
+#if !defined(NRWWSECTIONFAVORSIZE) 
       if (!((uint8_t)(address >> 8) < (uint8_t)(NRWWSTART >> 8)))
     1ed0:	08 31       	cpi	r16, 0x18	; 24
     1ed2:	20 f0       	brcs	.+8      	; 0x1edc <main+0xdc>

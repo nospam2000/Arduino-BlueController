@@ -15,6 +15,7 @@
 ./omake atmega8
 ./omake atmega88
 ./omake luminet
-./omake bluec88
-./omake bluec328
+./omake bluec88_115200
+./omake bluec328_19200
+./omake bluec328_115200
 
