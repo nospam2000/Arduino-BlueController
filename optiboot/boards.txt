@@ -185,45 +185,6 @@ atmega88o.build.f_cpu=16000000L
 atmega88o.build.core=arduino:arduino
 
 ##############################################################
-# not officially supported:
-#  - needs adapted avrdude with "atmega88p" entry
-#  - libs and Arduino code sometimes depends on defines like __AVR_ATmega88__,
-#    but the compiler sets the define __AVR_ATmega88P__  
-#bluecontroller88_115200o.name=[Optiboot] BlueController BCA8-BTM w/ ATmega88PA, 115200bps
-#bluecontroller88_115200o.upload.protocol=stk500
-#bluecontroller88_115200o.upload.maximum_size=7680
-#bluecontroller88_115200o.upload.speed=115200
-#bluecontroller88_115200o.upload.disable_flushing=true
-#bluecontroller88_115200o.bootloader.low_fuses=0xe2
-#bluecontroller88_115200o.bootloader.high_fuses=0xd6
-#bluecontroller88_115200o.bootloader.extended_fuses=0xfc
-#bluecontroller88_115200o.bootloader.unlock_bits=0x3F
-#bluecontroller88_115200o.bootloader.lock_bits=0x2F
-#bluecontroller88_115200o.bootloader.path=optiboot
-#bluecontroller88_115200o.bootloader.file=optiboot_bluec88_8MHz_115200bps.hex
-#bluecontroller88_115200o.build.mcu=atmega88p
-#bluecontroller88_115200o.build.f_cpu=8000000L
-#bluecontroller88_115200o.build.core=optiboot:bluecontroller
-
-##############################################################
-
-bluecontroller328_115200o.name=[Optiboot] BlueController BCA8-BTM w/ ATmega328P, 115200bps
-bluecontroller328_115200o.upload.protocol=stk500
-bluecontroller328_115200o.upload.maximum_size=32256
-bluecontroller328_115200o.upload.speed=115200
-bluecontroller328_115200o.upload.disable_flushing=true
-bluecontroller328_115200o.bootloader.low_fuses=0xe2
-bluecontroller328_115200o.bootloader.high_fuses=0xd6
-bluecontroller328_115200o.bootloader.extended_fuses=0xfe
-bluecontroller328_115200o.bootloader.unlock_bits=0x3F
-bluecontroller328_115200o.bootloader.lock_bits=0x2F
-bluecontroller328_115200o.bootloader.path=optiboot
-bluecontroller328_115200o.bootloader.file=optiboot_bluec328_8MHz_115200bps.hex
-bluecontroller328_115200o.build.mcu=atmega328p
-bluecontroller328_115200o.build.f_cpu=8000000L
-bluecontroller328_115200o.build.core=optiboot:bluecontroller
-
-##############################################################
 
 bluecontroller328_19200o.name=[Optiboot] BlueController BCA8-BTM w/ ATmega328P, 19200bps
 bluecontroller328_19200o.upload.protocol=stk500
@@ -240,6 +201,50 @@ bluecontroller328_19200o.bootloader.file=optiboot_bluec328_8MHz_19200bps.hex
 bluecontroller328_19200o.build.mcu=atmega328p
 bluecontroller328_19200o.build.f_cpu=8000000L
 bluecontroller328_19200o.build.core=optiboot:bluecontroller
+
+##############################################################
+# not officially supported:
+#  - when BTM-222 factory settings are activated by setting PIO4 3s to high,
+#    the module needs to be reconfigured, but the bluetooth communication is
+#    no longer working because the BT-222 baudrate doesn't match the ATmega baudrate
+#  - the upload speed is the same as with 19200 baud
+#bluecontroller328_115200o.name=[Optiboot] BlueController BCA8-BTM w/ ATmega328P, 115200bps
+#bluecontroller328_115200o.upload.protocol=stk500
+#bluecontroller328_115200o.upload.maximum_size=32256
+#bluecontroller328_115200o.upload.speed=115200
+#bluecontroller328_115200o.upload.disable_flushing=true
+#bluecontroller328_115200o.bootloader.low_fuses=0xe2
+#bluecontroller328_115200o.bootloader.high_fuses=0xd6
+#bluecontroller328_115200o.bootloader.extended_fuses=0xfe
+#bluecontroller328_115200o.bootloader.unlock_bits=0x3F
+#bluecontroller328_115200o.bootloader.lock_bits=0x2F
+#bluecontroller328_115200o.bootloader.path=optiboot
+#bluecontroller328_115200o.bootloader.file=optiboot_bluec328_8MHz_115200bps.hex
+#bluecontroller328_115200o.build.mcu=atmega328p
+#bluecontroller328_115200o.build.f_cpu=8000000L
+#bluecontroller328_115200o.build.core=optiboot:bluecontroller
+
+##############################################################
+# not officially supported:
+#  - needs adapted avrdude with "atmega88p" entry
+#  - libs and Arduino code sometimes depends on defines like __AVR_ATmega88__,
+#    but the compiler sets the define __AVR_ATmega88P__  
+#  - additonal issues can be found in section 'bluecontroller328_115200o'
+#bluecontroller88_115200o.name=[Optiboot] BlueController BCA8-BTM w/ ATmega88PA, 115200bps
+#bluecontroller88_115200o.upload.protocol=stk500
+#bluecontroller88_115200o.upload.maximum_size=7680
+#bluecontroller88_115200o.upload.speed=115200
+#bluecontroller88_115200o.upload.disable_flushing=true
+#bluecontroller88_115200o.bootloader.low_fuses=0xe2
+#bluecontroller88_115200o.bootloader.high_fuses=0xd6
+#bluecontroller88_115200o.bootloader.extended_fuses=0xfc
+#bluecontroller88_115200o.bootloader.unlock_bits=0x3F
+#bluecontroller88_115200o.bootloader.lock_bits=0x2F
+#bluecontroller88_115200o.bootloader.path=optiboot
+#bluecontroller88_115200o.bootloader.file=optiboot_bluec88_8MHz_115200bps.hex
+#bluecontroller88_115200o.build.mcu=atmega88p
+#bluecontroller88_115200o.build.f_cpu=8000000L
+#bluecontroller88_115200o.build.core=optiboot:bluecontroller
 
 ##############################################################
 #
