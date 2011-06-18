@@ -374,6 +374,23 @@ bluec328_19200_isp: LFUSE = E2 # internal osc, 8MHz (SUT0, CKSEL:0,2,3)
 bluec328_19200_isp: EFUSE = FE # BOD=1,8V (BODLEVEL0)
 bluec328_19200_isp: isp
 
+# experimental
+arduinobt168: TARGET = arduinobt168
+arduinobt168: MCU_TARGET = atmega168
+#arduinobt168: CFLAGS += '-DLED_START_FLASHES=3' '-DBAUD_RATE=115200'
+arduinobt168: CFLAGS += '-DBAUD_RATE=115200' '-DARDUINO_BT' '-DBLUECONTROLLER'
+arduinobt168: AVR_FREQ = 16000000L 
+arduinobt168: $(PROGRAM)_arduinobt168.hex
+arduinobt168: $(PROGRAM)_arduinobt168.lst
+arduinobt168_isp: arduinobt168
+arduinobt168_isp: TARGET = arduinobt168
+# 2.7V brownout
+arduinobt168_isp: HFUSE = D5
+# Low power xtal (16MHz) 16KCK/14CK+65ms
+arduinobt168_isp: LFUSE = FF
+# 512 byte boot
+arduinobt168_isp: EFUSE = 04
+arduinobt168_isp: isp
 
 # 1MHz clocked platforms
 #

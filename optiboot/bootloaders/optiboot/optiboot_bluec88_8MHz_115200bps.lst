@@ -476,7 +476,7 @@ void watchdogReset() {
 before starting the download. Additionally it takes some time to establish the bluetooth connection
 and the Arduino IDE compiles the sketch before download. */
 void extendWatchdogPeriodAfterStartup() {
-  if(!blueCBtnNotPressed && timOverflCnt < (F_CPU/(1024*65536/BLUEC_WAITTIME)))
+  if(!blueCBtnNotPressed && timOverflCnt < (F_CPU/(1024*65536/EXTENDED_WAITTIME)))
     1f98:	2e 2d       	mov	r18, r14
     1f9a:	9f 2d       	mov	r25, r15
   {
@@ -491,7 +491,7 @@ void extendWatchdogPeriodAfterStartup() {
 before starting the download. Additionally it takes some time to establish the bluetooth connection
 and the Arduino IDE compiles the sketch before download. */
 void extendWatchdogPeriodAfterStartup() {
-  if(!blueCBtnNotPressed && timOverflCnt < (F_CPU/(1024*65536/BLUEC_WAITTIME)))
+  if(!blueCBtnNotPressed && timOverflCnt < (F_CPU/(1024*65536/EXTENDED_WAITTIME)))
     1fa0:	22 23       	and	r18, r18
     1fa2:	39 f4       	brne	.+14     	; 0x1fb2 <getch+0x1c>
     1fa4:	94 30       	cpi	r25, 0x04	; 4

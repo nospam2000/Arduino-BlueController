@@ -55,6 +55,23 @@ minio.build.core=arduino:arduino
 
 ##############################################################
 
+arduinobt168o.name=[Optiboot] Arduino BT w/ ATmega168
+arduinobt168o.upload.protocol=stk500
+arduinobt168o.upload.maximum_size=15360
+arduinobt168o.upload.speed=115200
+arduinobt168o.bootloader.low_fuses=0xff
+arduinobt168o.bootloader.high_fuses=0xdd
+arduinobt168o.bootloader.extended_fuses=0x04
+arduinobt168o.bootloader.path=optiboot
+arduinobt168o.bootloader.file=optiboot_arduinobt168.hex
+arduinobt168o.bootloader.unlock_bits=0x3F
+arduinobt168o.bootloader.lock_bits=0x0F
+arduinobt168o.build.mcu=atmega168
+arduinobt168o.build.f_cpu=16000000L
+arduinobt168o.build.core=arduino:arduino
+
+##############################################################
+
 lilypad328o.name=[Optiboot] LilyPad Arduino w/ ATmega328
 lilypad328o.upload.protocol=stk500
 lilypad328o.upload.maximum_size=31744
@@ -172,8 +189,8 @@ atmega88o.build.core=arduino:arduino
 #  - needs adapted avrdude with "atmega88p" entry
 #  - libs and Arduino code sometimes depends on defines like __AVR_ATmega88__,
 #    but the compiler sets the define __AVR_ATmega88P__  
-#bluecontroller88_115200o.name=BlueController BCA8-BTM w/ ATmega88PA, 115200bps
-#bluecontroller88_115200o.upload.protocol=stk500v1
+#bluecontroller88_115200o.name=[Optiboot] BlueController BCA8-BTM w/ ATmega88PA, 115200bps
+#bluecontroller88_115200o.upload.protocol=stk500
 #bluecontroller88_115200o.upload.maximum_size=7680
 #bluecontroller88_115200o.upload.speed=115200
 #bluecontroller88_115200o.upload.disable_flushing=true
@@ -190,8 +207,8 @@ atmega88o.build.core=arduino:arduino
 
 ##############################################################
 
-bluecontroller328_115200o.name=BlueController BCA8-BTM w/ ATmega328P, 115200bps
-bluecontroller328_115200o.upload.protocol=stk500v1
+bluecontroller328_115200o.name=[Optiboot] BlueController BCA8-BTM w/ ATmega328P, 115200bps
+bluecontroller328_115200o.upload.protocol=stk500
 bluecontroller328_115200o.upload.maximum_size=32256
 bluecontroller328_115200o.upload.speed=115200
 bluecontroller328_115200o.upload.disable_flushing=true
@@ -208,8 +225,8 @@ bluecontroller328_115200o.build.core=optiboot:bluecontroller
 
 ##############################################################
 
-bluecontroller328_19200o.name=BlueController BCA8-BTM w/ ATmega328P, 19200bps
-bluecontroller328_19200o.upload.protocol=stk500v1
+bluecontroller328_19200o.name=[Optiboot] BlueController BCA8-BTM w/ ATmega328P, 19200bps
+bluecontroller328_19200o.upload.protocol=stk500
 bluecontroller328_19200o.upload.maximum_size=32256
 bluecontroller328_19200o.upload.speed=19200
 bluecontroller328_19200o.upload.disable_flushing=true

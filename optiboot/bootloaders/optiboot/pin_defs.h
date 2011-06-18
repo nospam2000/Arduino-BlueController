@@ -5,6 +5,18 @@
 #define LED_PIN     PINB
 
 #if defined(BLUECONTROLLER) 
+#if defined(ARDUINO_BT) 
+#define LED            PINB5
+#define LED_DDR_VAL    _BV(LED)
+#define BLUEC_BT_RESET_PORT  PORTD
+#define BLUEC_BT_RESET_DDR   DDRD
+#define BLUEC_BT_RESET       PIND7
+// this is the same pin as used for the LED!!!
+#define BLUEC_BTN_DDR  DDRB
+#define BLUEC_BTN_PORT PORTB
+#define BLUEC_BTN_PIN  PINB
+#define BLUEC_BTN      PINB5
+#else
 #define LED            PINB6
 #define LED_DDR_VAL    _BV(LED)
 #define BLUEC_BT_RESET_PORT  PORTB
@@ -14,12 +26,11 @@
 #define BLUEC_BTN_PORT PORTD
 #define BLUEC_BTN_PIN  PIND
 #define BLUEC_BTN      PIND2
-#define BLUEC_WAITTIME (35) // initial timeout in bootloader in seconds, granularity is 8.40s
-#define ENTER_BL_MAGIC (0xc49e)
+#endif // defined(ARDUINO_BT) 
 #else
 #define LED         PINB5
 #define LED_DDR_VAL (_BV(LED))
-#endif
+#endif // defined(BLUECONTROLLER)
 
 
 /* Ports for soft UART */

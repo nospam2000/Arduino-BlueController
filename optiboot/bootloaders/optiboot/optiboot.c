@@ -134,6 +134,9 @@
 #define BAUD_RATE 230400L
 #endif
 
+#define EXTENDED_WAITTIME (35) // initial timeout in bootloader in seconds, granularity is 8.40s
+#define ENTER_BL_MAGIC (0xc49e)
+
 /* set the UART baud rate defaults */
 #ifndef BAUD_RATE
 #if F_CPU >= 8000000L
@@ -665,7 +668,7 @@ void watchdogConfig(uint8_t x) {
 before starting the download. Additionally it takes some time to establish the bluetooth connection
 and the Arduino IDE compiles the sketch before download. */
 void extendWatchdogPeriodAfterStartup() {
-  if(!blueCBtnNotPressed && timOverflCnt < (F_CPU/(1024*65536/BLUEC_WAITTIME)))
+  if(!blueCBtnNotPressed && timOverflCnt < (F_CPU/(1024*65536/EXTENDED_WAITTIME)))
   {
     // each timer overflow takes 8.39 seconds @8MHz
     if(TIFR1 & _BV(TOV1))
