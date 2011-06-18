@@ -8,6 +8,7 @@ make pro16
 make pro20
 make diecimila
 make ng
+make arduinobt168
 make atmega328
 make atmega328_pro8
 make sanguino

@@ -8,6 +8,7 @@
 ./omake pro20
 ./omake diecimila
 ./omake ng
+./omake arduinobt168
 ./omake atmega328
 ./omake atmega328_pro8
 ./omake sanguino
