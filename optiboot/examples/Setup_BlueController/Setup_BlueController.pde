@@ -31,7 +31,7 @@ void setup()
   resetBtm222(); // make sure there is no active connection; escape sequence won't work
   blinkLed(200);
   delay(6000); //wait until the bt module is up and running
-  set_btbaudrate(115200); // must match the bootloader setting
+  set_btbaudrate(19200); // must match the bootloader setting
 
   // these setting make the connection as transparent as possible
   sendBtCmd("\rAT"); // make sure the module is not in sleep mode
