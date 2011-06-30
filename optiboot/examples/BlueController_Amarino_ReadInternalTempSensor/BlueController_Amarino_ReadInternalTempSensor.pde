@@ -16,15 +16,32 @@
 */
  
 #include <avr/io.h>
+#include <avr/wdt.h>
 #include <MeetAndroid.h>
 
+#define USE_AMARINO
 #define NUMBER_OF_SAMPLES (100)
+
+
+// to make the Arduino preprocessor happy which will insert some function prototypes after this line
+void dummyForArduinoIDE();
+
+#ifdef USE_AMARINO
+MeetAndroid meetAndroid(amarinoError);
+#endif
 
 void setup()
 {
   Serial.begin(19200);
   delay(100);
   chipTempRaw(); // discard first sample
+
+#ifdef USE_AMARINO
+  // register callback functions, which will be called when an associated event occurs.
+  // - the first parameter is the name of your function (see below)
+  // - match the second parameter ('A', 'B', 'a', etc...) with the flag on your Android application
+  meetAndroid.registerFunction(handleBootloaderEvent, 'Z');
+#endif
 }
 
 void loop()
@@ -35,8 +52,7 @@ void loop()
   }
   rawTemp /= (float)NUMBER_OF_SAMPLES; // calculate average
 
-// either use 1 for Amarino mode or 0 for ASCII mode here
-#if 1
+#ifdef USE_AMARINO
   // Amarino mode for Android phone
   meetAndroid.receive(); // you need to keep this in your loop() to receive events
   
@@ -73,4 +89,48 @@ int chipTempRaw(void) {
   return(ADC);
 }
  
+
+#ifdef USE_AMARINO
+/*
+ * note: flag is in this case 'Z' and numOfValues is 1 
+ */
+void handleBootloaderEvent(byte flag, byte numOfValues)
+{
+  // we use getInt(), since we know only data between 0 and 360 will be sent
+  //int dummy = meetAndroid.getInt();
+  enter_bootloader();
+}
+
+void amarinoError(uint8_t flag, uint8_t values){
+}
+#else
+void handleCommands(void)
+{
+  if (Serial.available())
+  {
+    uint8_t ch = Serial.read();
+    {
+      switch(ch)
+      {  
+        case 'y':
+          debugln_P("enter_bootloader()");
+          enter_bootloader();
+          break;
+      }
+    }
+  }
+}
+#endif
+
+#define ENTER_BL_MAGIC_VAL (0xc49e);
+#define ENTER_BL_MAGIC_ADR (*((volatile uint16_t*)0x100))
+
+void enter_bootloader(void)
+{
+  noInterrupts();
+  //resetBtm222();
+  ENTER_BL_MAGIC_ADR = ENTER_BL_MAGIC_VAL;
+  wdt_enable(WDTO_15MS);
+  for(;;) {}
+}
 
