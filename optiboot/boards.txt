@@ -230,6 +230,28 @@ bluecontroller328_19200o.build.core=optiboot:bluecontroller
 #  - libs and Arduino code sometimes depends on defines like __AVR_ATmega88__,
 #    but the compiler sets the define __AVR_ATmega88P__  
 #  - additonal issues can be found in section 'bluecontroller328_115200o'
+bluecontroller88_19200o.name=[Optiboot] BlueController BCA8-BTM w/ ATmega88PA, 19200bps
+bluecontroller88_19200o.upload.protocol=stk500
+bluecontroller88_19200o.upload.maximum_size=7680
+bluecontroller88_19200o.upload.speed=19200
+bluecontroller88_19200o.upload.disable_flushing=true
+bluecontroller88_19200o.bootloader.low_fuses=0xe2
+bluecontroller88_19200o.bootloader.high_fuses=0xd6
+bluecontroller88_19200o.bootloader.extended_fuses=0xfc
+bluecontroller88_19200o.bootloader.unlock_bits=0x3F
+bluecontroller88_19200o.bootloader.lock_bits=0x2F
+bluecontroller88_19200o.bootloader.path=optiboot
+bluecontroller88_19200o.bootloader.file=optiboot_bluec88_8MHz_19200bps.hex
+bluecontroller88_19200o.build.mcu=atmega88p
+bluecontroller88_19200o.build.f_cpu=8000000L
+bluecontroller88_19200o.build.core=optiboot:bluecontroller
+
+##############################################################
+# not officially supported:
+#  - needs adapted avrdude with "atmega88p" entry
+#  - libs and Arduino code sometimes depends on defines like __AVR_ATmega88__,
+#    but the compiler sets the define __AVR_ATmega88P__  
+#  - additonal issues can be found in section 'bluecontroller328_115200o'
 #bluecontroller88_115200o.name=[Optiboot] BlueController BCA8-BTM w/ ATmega88PA, 115200bps
 #bluecontroller88_115200o.upload.protocol=stk500
 #bluecontroller88_115200o.upload.maximum_size=7680

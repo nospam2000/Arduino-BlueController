@@ -1,5 +1,5 @@
 
-optiboot_bluec88_8MHz_115200bps.elf:     file format elf32-avr
+optiboot_bluec88_8MHz_19200bps.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
@@ -101,7 +101,7 @@ int main(void) {
     1e3c:	86 e0       	ldi	r24, 0x06	; 6
     1e3e:	80 93 c2 00 	sts	0x00C2, r24
   UBRR0L = (uint8_t)( (F_CPU + BAUD_RATE * 4L) / (BAUD_RATE * 8L) - 1 );
-    1e42:	88 e0       	ldi	r24, 0x08	; 8
+    1e42:	83 e3       	ldi	r24, 0x33	; 51
     1e44:	80 93 c4 00 	sts	0x00C4, r24
       ch = SPM_PAGESIZE / 2;
       do {

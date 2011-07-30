@@ -19,9 +19,9 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
   7 .debug_str    0000012d  00000000  00000000  00000b44  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_loc    00000270  00000000  00000000  00000c71  2**0
+  8 .debug_loc    00000223  00000000  00000000  00000c71  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_ranges 00000060  00000000  00000000  00000ee1  2**0
+  9 .debug_ranges 00000060  00000000  00000000  00000e94  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -50,46 +50,49 @@ int main(void) {
 
   // Adaboot no-wait mod
   ch = MCUSR;
-    1e0a:	14 b7       	in	r17, 0x34	; 52
+    1e0a:	84 b7       	in	r24, 0x34	; 52
   MCUSR = 0;
     1e0c:	14 be       	out	0x34, r1	; 52
-  //if (!(ch & _BV(EXTRF))) appStart();
+  else
+  {
+    appStart();
+  }
+#else
+    if (!(ch & _BV(EXTRF)))
+    1e0e:	81 ff       	sbrs	r24, 1
+      appStart();
+    1e10:	c0 d0       	rcall	.+384    	; 0x1f92 <appStart>
+#endif
 
-  // Set up watchdog to trigger after 500ms
+  // Set up watchdog to trigger after 1000 ms
   watchdogConfig(WATCHDOG_1S);
-    1e0e:	8e e0       	ldi	r24, 0x0E	; 14
-    1e10:	bc d0       	rcall	.+376    	; 0x1f8a <watchdogConfig>
+    1e12:	8e e0       	ldi	r24, 0x0E	; 14
+    1e14:	ba d0       	rcall	.+372    	; 0x1f8a <watchdogConfig>
 
 #if (LED_START_FLASHES > 0) || defined(BLUECONTROLLER)
   // Set up Timer 1 for timeout counter
   TCCR1B = _BV(CS12) | _BV(CS10); // div 1024
-    1e12:	85 e0       	ldi	r24, 0x05	; 5
-    1e14:	8e bd       	out	0x2e, r24	; 46
+    1e16:	85 e0       	ldi	r24, 0x05	; 5
+    1e18:	8e bd       	out	0x2e, r24	; 46
 #endif
 #ifndef SOFT_UART
 #ifdef __AVR_ATmega8__
   UCSRA = _BV(U2X); //Double speed mode USART
-    1e16:	82 e0       	ldi	r24, 0x02	; 2
-    1e18:	8b b9       	out	0x0b, r24	; 11
+    1e1a:	82 e0       	ldi	r24, 0x02	; 2
+    1e1c:	8b b9       	out	0x0b, r24	; 11
   UCSRB = _BV(RXEN) | _BV(TXEN);  // enable Rx & Tx
-    1e1a:	88 e1       	ldi	r24, 0x18	; 24
-    1e1c:	8a b9       	out	0x0a, r24	; 10
+    1e1e:	88 e1       	ldi	r24, 0x18	; 24
+    1e20:	8a b9       	out	0x0a, r24	; 10
   UCSRC = _BV(URSEL) | _BV(UCSZ1) | _BV(UCSZ0);  // config USART; 8N1
-    1e1e:	86 e8       	ldi	r24, 0x86	; 134
-    1e20:	80 bd       	out	0x20, r24	; 32
+    1e22:	86 e8       	ldi	r24, 0x86	; 134
+    1e24:	80 bd       	out	0x20, r24	; 32
   UBRRL = (uint8_t)( (F_CPU + BAUD_RATE * 4L) / (BAUD_RATE * 8L) - 1 );
-    1e22:	80 e1       	ldi	r24, 0x10	; 16
-    1e24:	89 b9       	out	0x09, r24	; 9
-  {
-    if (!(ch & _BV(EXTRF)))
-      appStart();
-  }
-#else
-    if (!(ch & _BV(EXTRF)))
-    1e26:	11 ff       	sbrs	r17, 1
-      appStart();
-    1e28:	b4 d0       	rcall	.+360    	; 0x1f92 <appStart>
+    1e26:	80 e1       	ldi	r24, 0x10	; 16
+    1e28:	89 b9       	out	0x09, r24	; 9
+  UART_DDR |= _BV(UART_TX_BIT);
+#endif
 
+#if !defined(BLUECONTROLLER) 
   /* Set LED pin as output */
   LED_DDR |= LED_DDR_VAL;
     1e2a:	bd 9a       	sbi	0x17, 5	; 23
@@ -255,7 +258,7 @@ void watchdogReset() {
     1eaa:	6a d0       	rcall	.+212    	; 0x1f80 <getch>
       length = getch();
     1eac:	69 d0       	rcall	.+210    	; 0x1f80 <getch>
-    1eae:	18 2f       	mov	r17, r24
+    1eae:	08 2f       	mov	r16, r24
       getch();
     1eb0:	67 d0       	rcall	.+206    	; 0x1f80 <getch>
 
@@ -264,7 +267,7 @@ void watchdogReset() {
       if ((uint8_t)(address >> 8) < (uint8_t)(NRWWSTART >> 8))
     1eb2:	8d 2d       	mov	r24, r13
     1eb4:	99 27       	eor	r25, r25
-    1eb6:	08 2f       	mov	r16, r24
+    1eb6:	18 2f       	mov	r17, r24
     1eb8:	88 31       	cpi	r24, 0x18	; 24
     1eba:	20 f4       	brcc	.+8      	; 0x1ec4 <main+0xc4>
         __boot_page_erase_short((uint16_t)(void*)address);
@@ -282,14 +285,14 @@ void watchdogReset() {
     1ec8:	5b d0       	rcall	.+182    	; 0x1f80 <getch>
     1eca:	89 93       	st	Y+, r24
       while (--length);
-    1ecc:	11 50       	subi	r17, 0x01	; 1
+    1ecc:	01 50       	subi	r16, 0x01	; 1
     1ece:	e1 f7       	brne	.-8      	; 0x1ec8 <main+0xc8>
 
       // If we are in NRWW section, page erase has to be delayed until now.
       // Todo: Take RAMPZ into account
 #if !defined(NRWWSECTIONFAVORSIZE) 
       if (!((uint8_t)(address >> 8) < (uint8_t)(NRWWSTART >> 8)))
-    1ed0:	08 31       	cpi	r16, 0x18	; 24
+    1ed0:	18 31       	cpi	r17, 0x18	; 24
     1ed2:	20 f0       	brcs	.+8      	; 0x1edc <main+0xdc>
 #endif
         __boot_page_erase_short((uint16_t)(void*)address);

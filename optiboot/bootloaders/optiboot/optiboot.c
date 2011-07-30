@@ -226,7 +226,7 @@ void appStart() __attribute__ ((naked));
 #define enterBootloaderByAppMagicLSB (*(volatile uint8_t*)(&enterBootloaderByAppMagic)) // only used to write something different than the magic to disable magic
 
 // using a register for the global variables saves some additional bytes
-register uint8_t blueCBtnNotPressed __asm__("r14"); // 1: the button has been pressed during reset
+//register uint8_t blueCBtnNotPressed __asm__("r14"); // 1: the button has been pressed during reset
 
 register uint8_t blueCAvrdudeSynced __asm__("r13"); // 1: got initial sync sequence from avrdude
 
@@ -269,9 +269,29 @@ int main(void) {
   // Adaboot no-wait mod
   ch = MCUSR;
   MCUSR = 0;
-  //if (!(ch & _BV(EXTRF))) appStart();
 
-  // Set up watchdog to trigger after 500ms
+#if defined(BLUECONTROLLER) 
+  BLUEC_BTN_PORT |= _BV(BLUEC_BTN); // enable pull-up for BlueController button 
+  //BLUEC_BT_RESET_PORT |= _BV(BLUEC_BT_RESET); // set BlueController BTM-222 RESET line to HIGH/pullup-enable
+  //BLUEC_BT_RESET_DDR |= _BV(BLUEC_BT_RESET); /* set BlueController BTM-222 RESET line as output */
+  blueCAvrdudeSynced = 0;
+  timOverflCnt = 0;
+
+  if(!(BLUEC_BTN_PIN & _BV(BLUEC_BTN))
+    || enterBootloaderByAppMagic == ENTER_BL_MAGIC)
+  {
+    enterBootloaderByAppMagicLSB = 0; // disable magic mechanism for next reset to avoid endless loop
+  }
+  else
+  {
+    appStart();
+  }
+#else
+    if (!(ch & _BV(EXTRF)))
+      appStart();
+#endif
+
+  // Set up watchdog to trigger after 1000 ms
   watchdogConfig(WATCHDOG_1S);
 
 #if (LED_START_FLASHES > 0) || defined(BLUECONTROLLER)
@@ -292,35 +312,14 @@ int main(void) {
 #endif
 #endif
 
-#if defined(BLUECONTROLLER) 
-  BLUEC_BTN_PORT |= _BV(BLUEC_BTN); // enable pull-up for BlueController button 
-  //BLUEC_BT_RESET_PORT |= _BV(BLUEC_BT_RESET); // set BlueController BTM-222 RESET line to HIGH/pullup-enable
-  //BLUEC_BT_RESET_DDR |= _BV(BLUEC_BT_RESET); /* set BlueController BTM-222 RESET line as output */
-  blueCAvrdudeSynced = 0;
-  timOverflCnt = 0;
-  blueCBtnNotPressed = (BLUEC_BTN_PIN & _BV(BLUEC_BTN));
-
-  if(enterBootloaderByAppMagic == ENTER_BL_MAGIC)
-  {
-    enterBootloaderByAppMagicLSB = 0; // disable magic mechanism for next reset to avoid endless loop
-    blueCBtnNotPressed = 0;
-  }
-  else
-  {
-    if (!(ch & _BV(EXTRF)))
-      appStart();
-  }
-#else
-    if (!(ch & _BV(EXTRF)))
-      appStart();
-
-  /* Set LED pin as output */
-  LED_DDR |= LED_DDR_VAL;
-#endif
-
 #ifdef SOFT_UART
   /* Set TX pin as output */
   UART_DDR |= _BV(UART_TX_BIT);
+#endif
+
+#if !defined(BLUECONTROLLER) 
+  /* Set LED pin as output */
+  LED_DDR |= LED_DDR_VAL;
 #endif
 
 #if LED_START_FLASHES > 0
@@ -668,7 +667,7 @@ void watchdogConfig(uint8_t x) {
 before starting the download. Additionally it takes some time to establish the bluetooth connection
 and the Arduino IDE compiles the sketch before download. */
 void extendWatchdogPeriodAfterStartup() {
-  if(!blueCBtnNotPressed && timOverflCnt < (F_CPU/(1024*65536/EXTENDED_WAITTIME)))
+  if(timOverflCnt < (F_CPU/(1024*65536/EXTENDED_WAITTIME)))
   {
     // each timer overflow takes 8.39 seconds @8MHz
     if(TIFR1 & _BV(TOV1))
@@ -678,7 +677,6 @@ void extendWatchdogPeriodAfterStartup() {
     }
 
     // avoid watchdog condition when button was pressed directly after reset
-    // TODO: avoid endless loop when INT0/PD2 is used as normal input => we need a timeout in this case
     // IDEA: use LED output as input for the button, so no additional port pin is needed
     watchdogReset();
   }
