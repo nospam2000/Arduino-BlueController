@@ -10,7 +10,7 @@
 ##############################################################
 
 bluecontroller328_19200o.name=BlueController BCA8-BTM w/ ATmega328P
-bluecontroller328_19200o.upload.protocol=stk500
+bluecontroller328_19200o.upload.protocol=arduino
 bluecontroller328_19200o.upload.maximum_size=32256
 bluecontroller328_19200o.upload.speed=19200
 bluecontroller328_19200o.upload.disable_flushing=true
@@ -23,7 +23,8 @@ bluecontroller328_19200o.bootloader.path=optiboot
 bluecontroller328_19200o.bootloader.file=optiboot_bluec328_8MHz_19200bps.hex
 bluecontroller328_19200o.build.mcu=atmega328p
 bluecontroller328_19200o.build.f_cpu=8000000L
-bluecontroller328_19200o.build.core=bluecontroller:bluecontroller
+bluecontroller328_19200o.build.core=arduino
+bluecontroller328_19200o.build.variant=bluecontroller
 
 ##############################################################
 # not officially supported:
@@ -32,7 +33,7 @@ bluecontroller328_19200o.build.core=bluecontroller:bluecontroller
 #    no longer working because the BT-222 baudrate doesn't match the ATmega bootloader baudrate
 #  - the upload speed is the same as with 19200 baud
 #bluecontroller328_115200o.name=BlueController BCA8-BTM w/ ATmega328P, 115200bps
-#bluecontroller328_115200o.upload.protocol=stk500
+#bluecontroller328_115200o.upload.protocol=arduino
 #bluecontroller328_115200o.upload.maximum_size=32256
 #bluecontroller328_115200o.upload.speed=115200
 #bluecontroller328_115200o.upload.disable_flushing=true
@@ -45,11 +46,12 @@ bluecontroller328_19200o.build.core=bluecontroller:bluecontroller
 #bluecontroller328_115200o.bootloader.file=optiboot_bluec328_8MHz_115200bps.hex
 #bluecontroller328_115200o.build.mcu=atmega328p
 #bluecontroller328_115200o.build.f_cpu=8000000L
-#bluecontroller328_115200o.build.core=bluecontroller:bluecontroller
+#bluecontroller328_115200o.build.core=arduino
+#bluecontroller328_115200o.build.variant=bluecontroller
 
 ##############################################################
 bluecontroller88_19200o.name=BlueController BCA8-BTM w/ ATmega88PA
-bluecontroller88_19200o.upload.protocol=stk500
+bluecontroller88_19200o.upload.protocol=arduino
 bluecontroller88_19200o.upload.maximum_size=7680
 bluecontroller88_19200o.upload.speed=19200
 bluecontroller88_19200o.upload.disable_flushing=true
@@ -62,7 +64,8 @@ bluecontroller88_19200o.bootloader.path=optiboot
 bluecontroller88_19200o.bootloader.file=optiboot_bluec88_8MHz_19200bps.hex
 bluecontroller88_19200o.build.mcu=atmega88
 bluecontroller88_19200o.build.f_cpu=8000000L
-bluecontroller88_19200o.build.core=bluecontroller:bluecontroller
+bluecontroller88_19200o.build.core=arduino
+bluecontroller88_19200o.build.variant=bluecontroller
 
 ##############################################################
 # not officially supported:
@@ -71,7 +74,7 @@ bluecontroller88_19200o.build.core=bluecontroller:bluecontroller
 #    no longer working because the BT-222 baudrate doesn't match the ATmega bootloader baudrate
 #  - the upload speed is the same as with 19200 baud
 #bluecontroller88_115200o.name=BlueController BCA8-BTM w/ ATmega88PA, 115200bps
-#bluecontroller88_115200o.upload.protocol=stk500
+#bluecontroller88_115200o.upload.protocol=arduino
 #bluecontroller88_115200o.upload.maximum_size=7680
 #bluecontroller88_115200o.upload.speed=115200
 #bluecontroller88_115200o.upload.disable_flushing=true
@@ -84,5 +87,6 @@ bluecontroller88_19200o.build.core=bluecontroller:bluecontroller
 #bluecontroller88_115200o.bootloader.file=optiboot_bluec88_8MHz_115200bps.hex
 #bluecontroller88_115200o.build.mcu=atmega88
 #bluecontroller88_115200o.build.f_cpu=8000000L
-#bluecontroller88_115200o.build.core=bluecontroller:bluecontroller
+#bluecontroller88_115200o.build.core=arduino
+#bluecontroller88_115200o.build.variant=bluecontroller
 
