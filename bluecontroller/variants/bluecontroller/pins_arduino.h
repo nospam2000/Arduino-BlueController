@@ -27,7 +27,7 @@
 
 #include <avr/pgmspace.h>
 
-#define NUM_DIGITAL_PINS            20
+#define NUM_DIGITAL_PINS            22
 #define NUM_ANALOG_INPUTS           6
 #define analogInputToDigitalPin(p)  ((p < 6) ? (p) + 14 : -1)
 
@@ -150,6 +150,8 @@ const uint8_t PROGMEM digital_pin_to_port_PGM[] = {
 	PC,
 	PC,
 	PC,
+	PB, /* 20: BlueController LED */
+	PB, /* 21: BlueController BTM-222 RESET */
 };
 
 const uint8_t PROGMEM digital_pin_to_bit_mask_PGM[] = {
@@ -173,6 +175,8 @@ const uint8_t PROGMEM digital_pin_to_bit_mask_PGM[] = {
 	_BV(3),
 	_BV(4),
 	_BV(5),
+	_BV(6), /* 20: BlueController LED */
+	_BV(7), /* 21: BlueController BTM-222 RESET */
 };
 
 const uint8_t PROGMEM digital_pin_to_timer_PGM[] = {
@@ -211,6 +215,8 @@ const uint8_t PROGMEM digital_pin_to_timer_PGM[] = {
 	NOT_ON_TIMER,
 	NOT_ON_TIMER,
 	NOT_ON_TIMER,
+	NOT_ON_TIMER, /* 20: BlueController LED */
+	NOT_ON_TIMER, /* 21: BlueController BTM-222 RESET */
 };
 
 #endif

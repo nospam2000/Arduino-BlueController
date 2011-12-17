@@ -23,7 +23,7 @@ bluecontroller328_19200o.bootloader.path=optiboot
 bluecontroller328_19200o.bootloader.file=optiboot_bluec328_8MHz_19200bps.hex
 bluecontroller328_19200o.build.mcu=atmega328p
 bluecontroller328_19200o.build.f_cpu=8000000L
-bluecontroller328_19200o.build.core=arduino
+bluecontroller328_19200o.build.core=arduino:arduino
 bluecontroller328_19200o.build.variant=bluecontroller
 
 ##############################################################
@@ -46,7 +46,7 @@ bluecontroller328_19200o.build.variant=bluecontroller
 #bluecontroller328_115200o.bootloader.file=optiboot_bluec328_8MHz_115200bps.hex
 #bluecontroller328_115200o.build.mcu=atmega328p
 #bluecontroller328_115200o.build.f_cpu=8000000L
-#bluecontroller328_115200o.build.core=arduino
+#bluecontroller328_115200o.build.core=arduino:arduino
 #bluecontroller328_115200o.build.variant=bluecontroller
 
 ##############################################################
@@ -64,7 +64,7 @@ bluecontroller88_19200o.bootloader.path=optiboot
 bluecontroller88_19200o.bootloader.file=optiboot_bluec88_8MHz_19200bps.hex
 bluecontroller88_19200o.build.mcu=atmega88
 bluecontroller88_19200o.build.f_cpu=8000000L
-bluecontroller88_19200o.build.core=arduino
+bluecontroller88_19200o.build.core=arduino:arduino
 bluecontroller88_19200o.build.variant=bluecontroller
 
 ##############################################################
@@ -87,6 +87,6 @@ bluecontroller88_19200o.build.variant=bluecontroller
 #bluecontroller88_115200o.bootloader.file=optiboot_bluec88_8MHz_115200bps.hex
 #bluecontroller88_115200o.build.mcu=atmega88
 #bluecontroller88_115200o.build.f_cpu=8000000L
-#bluecontroller88_115200o.build.core=arduino
+#bluecontroller88_115200o.build.core=arduino:arduino
 #bluecontroller88_115200o.build.variant=bluecontroller
 
