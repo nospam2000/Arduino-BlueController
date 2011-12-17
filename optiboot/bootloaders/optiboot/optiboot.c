@@ -492,8 +492,8 @@ int main(void) {
     }
     else if (ch == 'Q') {
       // Adaboot no-wait mod
-      watchdogConfig(WATCHDOG_16MS);
       verifySpace();
+      watchdogConfig(WATCHDOG_16MS);
     }
     else {
       // This covers the response to commands like STK_ENTER_PROGMODE
