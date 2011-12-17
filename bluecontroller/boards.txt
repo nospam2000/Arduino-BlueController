@@ -9,7 +9,7 @@
 
 ##############################################################
 
-bluecontroller328_19200o.name=[Optiboot] BlueController BCA8-BTM w/ ATmega328P
+bluecontroller328_19200o.name=BlueController BCA8-BTM w/ ATmega328P
 bluecontroller328_19200o.upload.protocol=stk500
 bluecontroller328_19200o.upload.maximum_size=32256
 bluecontroller328_19200o.upload.speed=19200
@@ -31,7 +31,7 @@ bluecontroller328_19200o.build.core=bluecontroller:bluecontroller
 #    the module needs to be reconfigured, but the bluetooth communication is
 #    no longer working because the BT-222 baudrate doesn't match the ATmega bootloader baudrate
 #  - the upload speed is the same as with 19200 baud
-#bluecontroller328_115200o.name=[Optiboot] BlueController BCA8-BTM w/ ATmega328P, 115200bps
+#bluecontroller328_115200o.name=BlueController BCA8-BTM w/ ATmega328P, 115200bps
 #bluecontroller328_115200o.upload.protocol=stk500
 #bluecontroller328_115200o.upload.maximum_size=32256
 #bluecontroller328_115200o.upload.speed=115200
@@ -48,7 +48,7 @@ bluecontroller328_19200o.build.core=bluecontroller:bluecontroller
 #bluecontroller328_115200o.build.core=bluecontroller:bluecontroller
 
 ##############################################################
-bluecontroller88_19200o.name=[Optiboot] BlueController BCA8-BTM w/ ATmega88PA
+bluecontroller88_19200o.name=BlueController BCA8-BTM w/ ATmega88PA
 bluecontroller88_19200o.upload.protocol=stk500
 bluecontroller88_19200o.upload.maximum_size=7680
 bluecontroller88_19200o.upload.speed=19200
@@ -70,7 +70,7 @@ bluecontroller88_19200o.build.core=bluecontroller:bluecontroller
 #    the module needs to be reconfigured, but the bluetooth communication is
 #    no longer working because the BT-222 baudrate doesn't match the ATmega bootloader baudrate
 #  - the upload speed is the same as with 19200 baud
-#bluecontroller88_115200o.name=[Optiboot] BlueController BCA8-BTM w/ ATmega88PA, 115200bps
+#bluecontroller88_115200o.name=BlueController BCA8-BTM w/ ATmega88PA, 115200bps
 #bluecontroller88_115200o.upload.protocol=stk500
 #bluecontroller88_115200o.upload.maximum_size=7680
 #bluecontroller88_115200o.upload.speed=115200
