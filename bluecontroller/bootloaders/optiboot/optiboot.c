@@ -492,8 +492,8 @@ int main(void) {
     }
     else if (ch == 'Q') {
       // Adaboot no-wait mod
-      verifySpace();
-      watchdogConfig(WATCHDOG_16MS);
+      watchdogConfig(WATCHDOG_64MS); // 16ms is not enough to send the result back to avrdude
+      verifySpace(); // fall through to the "else" clause, saves 4 bytes
     }
     else {
       // This covers the response to commands like STK_ENTER_PROGMODE
