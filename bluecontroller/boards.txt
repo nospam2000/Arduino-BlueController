@@ -27,11 +27,15 @@ bluecontroller328_19200o.build.core=arduino:arduino
 bluecontroller328_19200o.build.variant=bluecontroller
 
 ##############################################################
-# not officially supported:
-#  - when BTM-222 factory settings are activated by setting PIO4 3s to high,
+# 115200 bps are not officially supported because of the following reasons:
+#  - when BTM-222 factory settings are activated (e.g. by setting PIO4 3s to high),
 #    the module needs to be reconfigured, but the bluetooth communication is
-#    no longer working because the BT-222 baudrate doesn't match the ATmega bootloader baudrate
-#  - the upload speed is the same as with 19200 baud
+#    no longer working because the BT-222 baudrate doesn't match the ATmega bootloader baudrate.
+#    You would need an external programmer to fix this.
+#  - the upload speed is the same as with 19200 baud. A more complex transfer protocol
+#    is needed which doesn't fit in a 512 byte bootloader.
+#  - the baudrate in this setting actually doesn't matter because it doesn't affect
+#    the bluetooth baudrate at all. The only real difference is the bootloader.
 #bluecontroller328_115200o.name=BlueController BCA8-BTM w/ ATmega328P, 115200bps
 #bluecontroller328_115200o.upload.protocol=arduino
 #bluecontroller328_115200o.upload.maximum_size=32256
@@ -68,11 +72,15 @@ bluecontroller88_19200o.build.core=arduino:arduino
 bluecontroller88_19200o.build.variant=bluecontroller
 
 ##############################################################
-# not officially supported:
-#  - when BTM-222 factory settings are activated by setting PIO4 3s to high,
+# 115200 bps are not officially supported because of the following reasons:
+#  - when BTM-222 factory settings are activated (e.g. by setting PIO4 3s to high),
 #    the module needs to be reconfigured, but the bluetooth communication is
-#    no longer working because the BT-222 baudrate doesn't match the ATmega bootloader baudrate
-#  - the upload speed is the same as with 19200 baud
+#    no longer working because the BT-222 baudrate doesn't match the ATmega bootloader baudrate.
+#    You would need an external programmer to fix this.
+#  - the upload speed is the same as with 19200 baud. A more complex transfer protocol
+#    is needed which doesn't fit in a 512 byte bootloader.
+#  - the baudrate in this setting actually doesn't matter because it doesn't affect
+#    the bluetooth baudrate at all. The only real difference is the bootloader.
 #bluecontroller88_115200o.name=BlueController BCA8-BTM w/ ATmega88PA, 115200bps
 #bluecontroller88_115200o.upload.protocol=arduino
 #bluecontroller88_115200o.upload.maximum_size=7680
