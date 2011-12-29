@@ -1,0 +1,108 @@
+# by Michael Dreher <michael@5dot1.de>
+#
+# For more information about
+#   Bluecontroller bootloader and the Arduino integration:
+#     https://code.google.com/r/michaeldreher42-bluecontroller
+#
+#   General information about the Bluecontroller board:
+#     http://www.bluecontroller.com or http://www.lynx-dev.com
+
+##############################################################
+
+bluecontroller328_19200o.name=BlueController BCA8-BTM w/ ATmega328P
+bluecontroller328_19200o.upload.protocol=arduino
+bluecontroller328_19200o.upload.maximum_size=32256
+bluecontroller328_19200o.upload.speed=19200
+bluecontroller328_19200o.upload.disable_flushing=true
+bluecontroller328_19200o.bootloader.low_fuses=0xe2
+bluecontroller328_19200o.bootloader.high_fuses=0xd6
+bluecontroller328_19200o.bootloader.extended_fuses=0xfe
+bluecontroller328_19200o.bootloader.unlock_bits=0x3F
+bluecontroller328_19200o.bootloader.lock_bits=0x2F
+bluecontroller328_19200o.bootloader.path=optiboot
+bluecontroller328_19200o.bootloader.file=optiboot_bluec328_8MHz_19200bps.hex
+bluecontroller328_19200o.build.mcu=atmega328p
+bluecontroller328_19200o.build.f_cpu=8000000L
+bluecontroller328_19200o.build.variant=bluecontroller
+bluecontroller328_19200o.build.core=arduino:arduino
+# for Arduino < V1.0, use this line instead of the one above:
+#bluecontroller328_19200o.build.core=bluecontroller:bluecontroller
+
+##############################################################
+# 115200 bps are not officially supported because of the following reasons:
+#  - when BTM-222 factory settings are activated (e.g. by setting PIO4 3s to high),
+#    the module needs to be reconfigured, but the bluetooth communication is
+#    no longer working because the BT-222 baudrate doesn't match the ATmega bootloader baudrate.
+#    You would need an external programmer to fix this.
+#  - the upload speed is the same as with 19200 baud. A more complex transfer protocol
+#    is needed which doesn't fit in a 512 byte bootloader.
+#  - the baudrate in this setting actually doesn't matter because it doesn't affect
+#    the bluetooth baudrate at all. The only real difference is the bootloader.
+#bluecontroller328_115200o.name=BlueController BCA8-BTM w/ ATmega328P, 115200bps
+#bluecontroller328_115200o.upload.protocol=arduino
+#bluecontroller328_115200o.upload.maximum_size=32256
+#bluecontroller328_115200o.upload.speed=115200
+#bluecontroller328_115200o.upload.disable_flushing=true
+#bluecontroller328_115200o.bootloader.low_fuses=0xe2
+#bluecontroller328_115200o.bootloader.high_fuses=0xd6
+#bluecontroller328_115200o.bootloader.extended_fuses=0xfe
+#bluecontroller328_115200o.bootloader.unlock_bits=0x3F
+#bluecontroller328_115200o.bootloader.lock_bits=0x2F
+#bluecontroller328_115200o.bootloader.path=optiboot
+#bluecontroller328_115200o.bootloader.file=optiboot_bluec328_8MHz_115200bps.hex
+#bluecontroller328_115200o.build.mcu=atmega328p
+#bluecontroller328_115200o.build.f_cpu=8000000L
+#bluecontroller328_115200o.build.variant=bluecontroller
+#bluecontroller328_115200o.build.core=arduino:arduino
+## for Arduino < V1.0, use this line instead of the one above:
+##bluecontroller328_115200o.build.core=bluecontroller:bluecontroller
+
+##############################################################
+bluecontroller88_19200o.name=BlueController BCA8-BTM w/ ATmega88PA
+bluecontroller88_19200o.upload.protocol=arduino
+bluecontroller88_19200o.upload.maximum_size=7680
+bluecontroller88_19200o.upload.speed=19200
+bluecontroller88_19200o.upload.disable_flushing=true
+bluecontroller88_19200o.bootloader.low_fuses=0xe2
+bluecontroller88_19200o.bootloader.high_fuses=0xd6
+bluecontroller88_19200o.bootloader.extended_fuses=0xfc
+bluecontroller88_19200o.bootloader.unlock_bits=0x3F
+bluecontroller88_19200o.bootloader.lock_bits=0x2F
+bluecontroller88_19200o.bootloader.path=optiboot
+bluecontroller88_19200o.bootloader.file=optiboot_bluec88_8MHz_19200bps.hex
+bluecontroller88_19200o.build.mcu=atmega88
+bluecontroller88_19200o.build.f_cpu=8000000L
+bluecontroller88_19200o.build.variant=bluecontroller
+bluecontroller88_19200o.build.core=arduino:arduino
+# for Arduino < V1.0, use this line instead of the one above:
+#bluecontroller88_19200o.build.core=bluecontroller:bluecontroller
+
+##############################################################
+# 115200 bps are not officially supported because of the following reasons:
+#  - when BTM-222 factory settings are activated (e.g. by setting PIO4 3s to high),
+#    the module needs to be reconfigured, but the bluetooth communication is
+#    no longer working because the BT-222 baudrate doesn't match the ATmega bootloader baudrate.
+#    You would need an external programmer to fix this.
+#  - the upload speed is the same as with 19200 baud. A more complex transfer protocol
+#    is needed which doesn't fit in a 512 byte bootloader.
+#  - the baudrate in this setting actually doesn't matter because it doesn't affect
+#    the bluetooth baudrate at all. The only real difference is the bootloader.
+#bluecontroller88_115200o.name=BlueController BCA8-BTM w/ ATmega88PA, 115200bps
+#bluecontroller88_115200o.upload.protocol=arduino
+#bluecontroller88_115200o.upload.maximum_size=7680
+#bluecontroller88_115200o.upload.speed=115200
+#bluecontroller88_115200o.upload.disable_flushing=true
+#bluecontroller88_115200o.bootloader.low_fuses=0xe2
+#bluecontroller88_115200o.bootloader.high_fuses=0xd6
+#bluecontroller88_115200o.bootloader.extended_fuses=0xfc
+#bluecontroller88_115200o.bootloader.unlock_bits=0x3F
+#bluecontroller88_115200o.bootloader.lock_bits=0x2F
+#bluecontroller88_115200o.bootloader.path=optiboot
+#bluecontroller88_115200o.bootloader.file=optiboot_bluec88_8MHz_115200bps.hex
+#bluecontroller88_115200o.build.mcu=atmega88
+#bluecontroller88_115200o.build.f_cpu=8000000L
+#bluecontroller88_115200o.build.variant=bluecontroller
+#bluecontroller88_115200o.build.core=arduino:arduino
+## for Arduino < V1.0, use this line instead of the one above:
+##bluecontroller88_115200o.build.core=bluecontroller:bluecontroller
+

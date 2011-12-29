@@ -1,0 +1,5 @@
+# use glob syntax.
+syntax: glob
+.DS_Store
+*.swp
+*.orig
