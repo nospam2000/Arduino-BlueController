@@ -1,0 +1,18 @@
+#Tue Jan 03 22:19:31 CET 2012
+avrdude/configs/programmerconfig.1/ppresetline=
+avrdudepropertypage/previewexpanded=false
+avrpaths//systempath/AVRDUDE=/opt/local/bin
+avrdude/configs/programmerconfig.1/baudrate=115200
+avrdudepropertypage/weight_preview_expanded=20
+avrdude/configs/programmerconfig.1/ppvccline=
+avrdude/configs/programmerconfig.1/name=BlueController2
+avrdudepropertypage/weight_preview_collapsed=50
+avrdudepropertypage/weight_top_expanded=80
+avrdudepropertypage/weight_top_collapsed=950
+avrpaths//systempath/AVRGCC=/opt/local/bin
+avrdude/configs/programmerconfig.1/port=/dev/cu.BlueController2
+avrdude/configs/programmerconfig.1/programmer=stk500v1
+avrdude/configs/programmerconfig.1/description=BlueController2 as ISP
+eclipse.preferences.version=1
+avrpaths//systempath/MAKE=/usr/bin
+avrdude/configs/programmerconfig.1/postAvrdudeDelayMs=
