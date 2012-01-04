@@ -183,7 +183,6 @@ uint8_t getch(void);
 static inline void getNch(uint8_t); /* "static inline" is a compiler hint to reduce code size */
 void verifySpace();
 static inline void flash_led(uint8_t);
-uint8_t getLen();
 static inline void watchdogReset();
 static inline void extendWatchdogPeriodAfterStartup();
 void watchdogConfig(uint8_t x);
