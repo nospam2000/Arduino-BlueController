@@ -255,7 +255,9 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
         stk500_send(pgm, buf, i); // TODO: handle error
         writePos += i;
         byteAddr += cursize;
+#ifdef DEBUG_TRACE_BULK
 fprintf(stderr, "send(%6d, %6d, %6d, %6d)\n", writePos, ackPos, byteAddr, cursize);
+#endif
       }
       else
       {
@@ -269,7 +271,9 @@ fprintf(stderr, "send(%6d, %6d, %6d, %6d)\n", writePos, ackPos, byteAddr, cursiz
     if((remain == 0) && (availWindowSize >= BULK_WRITE_END_TELEGRAM_LEN))
     {
       // end of data reached, just handle outstanding notifications as long as ackPos < writePos
+#ifdef DEBUG_TRACE_BULK
 fprintf(stderr, "END\n");
+#endif
       i = 0;
       buf[i++] = Cmnd_STK_BULK_WRITE_END;
       buf[i++] = Sync_CRC_EOP;
@@ -286,7 +290,9 @@ fprintf(stderr, "END\n");
     }
     else
     {
+#ifdef DEBUG_TRACE_BULK
 //fprintf(stderr, "recv(%6d, %6d, %6d, cmd=0x%02x)\n", writePos, ackPos, byteAddr, buf[0]);
+#endif
       switch(buf[0])
       {
         case Resp_STK_BULK_WRITE_ACK:
@@ -304,7 +310,9 @@ fprintf(stderr, "END\n");
           }
           ackPos = buf[6] | (buf[7] << 8) | (buf[8] << 16) | (buf[8] << 24);
           uint32_t ackAddr = buf[2] | (buf[3] << 8) | (buf[4] << 16) | (buf[5] << 24);
+#ifdef DEBUG_TRACE_BULK
 fprintf(stderr, "ackn(%6d, %6d, %6d, %6d, cmd=0x%02x)\n", writePos, ackPos, byteAddr, ackAddr, buf[0]);
+#endif
           if(buf[1] == Stat_STK_BULK_ACKSTATE_NAK)
           {
             // retransmit from given address; be careful not to mix byteAddr and loadAddr!
@@ -370,7 +378,9 @@ fprintf(stderr, "ackn(%6d, %6d, %6d, %6d, cmd=0x%02x)\n", writePos, ackPos, byte
           break; // continue the loop
 
         case Resp_STK_BULK_WRITE_END_ACK:
+#ifdef DEBUG_TRACE_BULK
 fprintf(stderr, "END Ack\n");
+#endif
           if (stk500_recv(pgm, &buf[1], 7-1) < 0)
           {
             fprintf(stderr, "%s: bluec_bulk_write(): Timeout while reading BULK_WRITE_END_ACK\n", progname);
