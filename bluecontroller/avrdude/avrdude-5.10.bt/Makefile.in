@@ -87,7 +87,7 @@ am_libavrdude_a_OBJECTS = libavrdude_a-config_gram.$(OBJEXT) \
 	libavrdude_a-lexer.$(OBJEXT) libavrdude_a-arduino.$(OBJEXT) \
 	libavrdude_a-avr.$(OBJEXT) libavrdude_a-avr910.$(OBJEXT) \
 	libavrdude_a-avrpart.$(OBJEXT) libavrdude_a-bitbang.$(OBJEXT) \
-	libavrdude_a-buspirate.$(OBJEXT) \
+	libavrdude_a-bluec.$(OBJEXT) libavrdude_a-buspirate.$(OBJEXT) \
 	libavrdude_a-butterfly.$(OBJEXT) libavrdude_a-config.$(OBJEXT) \
 	libavrdude_a-confwin.$(OBJEXT) libavrdude_a-crc16.$(OBJEXT) \
 	libavrdude_a-fileio.$(OBJEXT) libavrdude_a-jtagmkI.$(OBJEXT) \
@@ -99,10 +99,8 @@ am_libavrdude_a_OBJECTS = libavrdude_a-config_gram.$(OBJEXT) \
 	libavrdude_a-serbb_win32.$(OBJEXT) \
 	libavrdude_a-ser_avrdoper.$(OBJEXT) \
 	libavrdude_a-ser_posix.$(OBJEXT) \
-	libavrdude_a-bt_macos.$(OBJEXT) libavrdude_a-RFComm.$(OBJEXT) \
-	libavrdude_a-RingBuffer.$(OBJEXT) \
-	libavrdude_a-ser_win32.$(OBJEXT) libavrdude_a-stk500.$(OBJEXT) \
-	libavrdude_a-stk500v2.$(OBJEXT) \
+	libavrdude_a-ser_win32.$(OBJEXT) libavrdude_a-bluec.$(OBJEXT) \
+	libavrdude_a-stk500.$(OBJEXT) libavrdude_a-stk500v2.$(OBJEXT) \
 	libavrdude_a-stk500generic.$(OBJEXT) \
 	libavrdude_a-usbasp.$(OBJEXT) \
 	libavrdude_a-usb_libusb.$(OBJEXT) \
@@ -126,11 +124,6 @@ CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 LEXCOMPILE = $(LEX) $(LFLAGS) $(AM_LFLAGS)
 YLWRAP = $(top_srcdir)/ylwrap
-OBJCCOMPILE = $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS)
-OBJCLD = $(OBJC)
-OBJCLINK = $(OBJCLD) $(AM_OBJCFLAGS) $(OBJCFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
 YACCCOMPILE = $(YACC) $(YFLAGS) $(AM_YFLAGS)
 SOURCES = $(libavrdude_a_SOURCES) $(avrdude_SOURCES)
 DIST_SOURCES = $(libavrdude_a_SOURCES) $(avrdude_SOURCES)
@@ -243,7 +236,6 @@ LDFLAGS = @LDFLAGS@
 LEX = @LEX@
 LEXLIB = @LEXLIB@
 LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-LIBBT = @LIBBT@
 LIBHID = @LIBHID@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
@@ -251,9 +243,6 @@ LIBUSB = @LIBUSB@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
-OBJC = @OBJC@
-OBJCDEPMODE = @OBJCDEPMODE@
-OBJCFLAGS = @OBJCFLAGS@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -277,7 +266,6 @@ abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -352,7 +340,7 @@ avrdude_CPPFLAGS = -DCONFIG_DIR=\"$(sysconfdir)\"
 libavrdude_a_CPPFLAGS = -DCONFIG_DIR=\"$(sysconfdir)\"
 avrdude_CFLAGS = @ENABLE_WARNINGS@
 libavrdude_a_CFLAGS = @ENABLE_WARNINGS@
-avrdude_LDADD = $(top_builddir)/$(noinst_LIBRARIES) @LIBUSB@ @LIBHID@ @LIBBT@ -lm
+avrdude_LDADD = $(top_builddir)/$(noinst_LIBRARIES) @LIBUSB@ @LIBHID@ -lm
 noinst_LIBRARIES = libavrdude.a
 libavrdude_a_SOURCES = \
 	config_gram.y \
@@ -368,6 +356,8 @@ libavrdude_a_SOURCES = \
 	avrpart.h \
 	bitbang.c \
 	bitbang.h \
+	bluec.c \
+	bluec.h \
 	buspirate.c \
 	buspirate.h \
 	butterfly.c \
@@ -408,11 +398,10 @@ libavrdude_a_SOURCES = \
 	ser_avrdoper.c \
 	ser_posix.c \
 	RFComm-Prefix.h \
-	bt_macos.m \
-	RFComm.m \
-	RingBuffer.m \
 	ser_win32.c \
 	solaris_ecpp.h \
+	bluec.c \
+	bluec.h \
 	stk500.c \
 	stk500.h \
 	stk500_private.h \
@@ -441,7 +430,7 @@ all: ac_cfg.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .c .l .m .o .obj .y
+.SUFFIXES: .c .l .o .obj .y
 am--refresh:
 	@:
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -558,14 +547,12 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/avrdude-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/avrdude-term.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-RFComm.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-RingBuffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-arduino.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-avr.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-avr910.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-avrpart.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-bitbang.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-bt_macos.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-bluec.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-buspirate.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-butterfly.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-config.Po@am__quote@
@@ -706,6 +693,20 @@ libavrdude_a-bitbang.obj: bitbang.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bitbang.c' object='libavrdude_a-bitbang.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-bitbang.obj `if test -f 'bitbang.c'; then $(CYGPATH_W) 'bitbang.c'; else $(CYGPATH_W) '$(srcdir)/bitbang.c'; fi`
+
+libavrdude_a-bluec.o: bluec.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-bluec.o -MD -MP -MF $(DEPDIR)/libavrdude_a-bluec.Tpo -c -o libavrdude_a-bluec.o `test -f 'bluec.c' || echo '$(srcdir)/'`bluec.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-bluec.Tpo $(DEPDIR)/libavrdude_a-bluec.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bluec.c' object='libavrdude_a-bluec.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-bluec.o `test -f 'bluec.c' || echo '$(srcdir)/'`bluec.c
+
+libavrdude_a-bluec.obj: bluec.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-bluec.obj -MD -MP -MF $(DEPDIR)/libavrdude_a-bluec.Tpo -c -o libavrdude_a-bluec.obj `if test -f 'bluec.c'; then $(CYGPATH_W) 'bluec.c'; else $(CYGPATH_W) '$(srcdir)/bluec.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-bluec.Tpo $(DEPDIR)/libavrdude_a-bluec.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bluec.c' object='libavrdude_a-bluec.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-bluec.obj `if test -f 'bluec.c'; then $(CYGPATH_W) 'bluec.c'; else $(CYGPATH_W) '$(srcdir)/bluec.c'; fi`
 
 libavrdude_a-buspirate.o: buspirate.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-buspirate.o -MD -MP -MF $(DEPDIR)/libavrdude_a-buspirate.Tpo -c -o libavrdude_a-buspirate.o `test -f 'buspirate.c' || echo '$(srcdir)/'`buspirate.c
@@ -1101,62 +1102,6 @@ avrdude-term.obj: term.c
 
 .l.c:
 	$(am__skiplex) $(SHELL) $(YLWRAP) $< $(LEX_OUTPUT_ROOT).c $@ -- $(LEXCOMPILE)
-
-.m.o:
-@am__fastdepOBJC_TRUE@	$(OBJCCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepOBJC_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepOBJC_FALSE@	$(OBJCCOMPILE) -c -o $@ $<
-
-.m.obj:
-@am__fastdepOBJC_TRUE@	$(OBJCCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepOBJC_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepOBJC_FALSE@	$(OBJCCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-
-libavrdude_a-bt_macos.o: bt_macos.m
-@am__fastdepOBJC_TRUE@	$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libavrdude_a-bt_macos.o -MD -MP -MF $(DEPDIR)/libavrdude_a-bt_macos.Tpo -c -o libavrdude_a-bt_macos.o `test -f 'bt_macos.m' || echo '$(srcdir)/'`bt_macos.m
-@am__fastdepOBJC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-bt_macos.Tpo $(DEPDIR)/libavrdude_a-bt_macos.Po
-@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	source='bt_macos.m' object='libavrdude_a-bt_macos.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepOBJC_FALSE@	$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libavrdude_a-bt_macos.o `test -f 'bt_macos.m' || echo '$(srcdir)/'`bt_macos.m
-
-libavrdude_a-bt_macos.obj: bt_macos.m
-@am__fastdepOBJC_TRUE@	$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libavrdude_a-bt_macos.obj -MD -MP -MF $(DEPDIR)/libavrdude_a-bt_macos.Tpo -c -o libavrdude_a-bt_macos.obj `if test -f 'bt_macos.m'; then $(CYGPATH_W) 'bt_macos.m'; else $(CYGPATH_W) '$(srcdir)/bt_macos.m'; fi`
-@am__fastdepOBJC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-bt_macos.Tpo $(DEPDIR)/libavrdude_a-bt_macos.Po
-@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	source='bt_macos.m' object='libavrdude_a-bt_macos.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepOBJC_FALSE@	$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libavrdude_a-bt_macos.obj `if test -f 'bt_macos.m'; then $(CYGPATH_W) 'bt_macos.m'; else $(CYGPATH_W) '$(srcdir)/bt_macos.m'; fi`
-
-libavrdude_a-RFComm.o: RFComm.m
-@am__fastdepOBJC_TRUE@	$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libavrdude_a-RFComm.o -MD -MP -MF $(DEPDIR)/libavrdude_a-RFComm.Tpo -c -o libavrdude_a-RFComm.o `test -f 'RFComm.m' || echo '$(srcdir)/'`RFComm.m
-@am__fastdepOBJC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-RFComm.Tpo $(DEPDIR)/libavrdude_a-RFComm.Po
-@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	source='RFComm.m' object='libavrdude_a-RFComm.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepOBJC_FALSE@	$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libavrdude_a-RFComm.o `test -f 'RFComm.m' || echo '$(srcdir)/'`RFComm.m
-
-libavrdude_a-RFComm.obj: RFComm.m
-@am__fastdepOBJC_TRUE@	$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libavrdude_a-RFComm.obj -MD -MP -MF $(DEPDIR)/libavrdude_a-RFComm.Tpo -c -o libavrdude_a-RFComm.obj `if test -f 'RFComm.m'; then $(CYGPATH_W) 'RFComm.m'; else $(CYGPATH_W) '$(srcdir)/RFComm.m'; fi`
-@am__fastdepOBJC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-RFComm.Tpo $(DEPDIR)/libavrdude_a-RFComm.Po
-@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	source='RFComm.m' object='libavrdude_a-RFComm.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepOBJC_FALSE@	$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libavrdude_a-RFComm.obj `if test -f 'RFComm.m'; then $(CYGPATH_W) 'RFComm.m'; else $(CYGPATH_W) '$(srcdir)/RFComm.m'; fi`
-
-libavrdude_a-RingBuffer.o: RingBuffer.m
-@am__fastdepOBJC_TRUE@	$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libavrdude_a-RingBuffer.o -MD -MP -MF $(DEPDIR)/libavrdude_a-RingBuffer.Tpo -c -o libavrdude_a-RingBuffer.o `test -f 'RingBuffer.m' || echo '$(srcdir)/'`RingBuffer.m
-@am__fastdepOBJC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-RingBuffer.Tpo $(DEPDIR)/libavrdude_a-RingBuffer.Po
-@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	source='RingBuffer.m' object='libavrdude_a-RingBuffer.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepOBJC_FALSE@	$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libavrdude_a-RingBuffer.o `test -f 'RingBuffer.m' || echo '$(srcdir)/'`RingBuffer.m
-
-libavrdude_a-RingBuffer.obj: RingBuffer.m
-@am__fastdepOBJC_TRUE@	$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libavrdude_a-RingBuffer.obj -MD -MP -MF $(DEPDIR)/libavrdude_a-RingBuffer.Tpo -c -o libavrdude_a-RingBuffer.obj `if test -f 'RingBuffer.m'; then $(CYGPATH_W) 'RingBuffer.m'; else $(CYGPATH_W) '$(srcdir)/RingBuffer.m'; fi`
-@am__fastdepOBJC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-RingBuffer.Tpo $(DEPDIR)/libavrdude_a-RingBuffer.Po
-@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	source='RingBuffer.m' object='libavrdude_a-RingBuffer.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepOBJC_FALSE@	$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libavrdude_a-RingBuffer.obj `if test -f 'RingBuffer.m'; then $(CYGPATH_W) 'RingBuffer.m'; else $(CYGPATH_W) '$(srcdir)/RingBuffer.m'; fi`
 
 .y.c:
 	$(am__skipyacc) $(SHELL) $(YLWRAP) $< y.tab.c $@ y.tab.h $*.h y.output $*.output -- $(YACCCOMPILE)

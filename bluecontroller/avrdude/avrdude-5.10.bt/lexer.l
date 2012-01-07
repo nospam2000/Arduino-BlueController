@@ -118,6 +118,7 @@ SIGN     [+-]
 
 allowfullpagebitstream { yylval=NULL; return K_ALLOWFULLPAGEBITSTREAM; }
 arduino          { yylval=NULL; return K_ARDUINO; }
+bluec            { yylval=NULL; return K_BLUEC; }
 avr910           { yylval=NULL; return K_AVR910; }
 avr910_devcode   { yylval=NULL; return K_AVR910_DEVCODE; }
 usbasp           { yylval=NULL; return K_USBASP; }

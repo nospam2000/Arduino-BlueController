@@ -1,8 +1,5 @@
 /* ac_cfg.h.in.  Generated from configure.ac by autoheader.  */
 
-/* bluetooth is available */
-#undef HAVE_BLUETOOTH
-
 /* Define to 1 if you have the <ddk/hidsdi.h> header file. */
 #undef HAVE_DDK_HIDSDI_H
 

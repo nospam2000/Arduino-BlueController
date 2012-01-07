@@ -53,7 +53,7 @@ avrdude_CFLAGS   = @ENABLE_WARNINGS@
 
 libavrdude_a_CFLAGS   = @ENABLE_WARNINGS@
 
-avrdude_LDADD  = $(top_builddir)/$(noinst_LIBRARIES) @LIBUSB@ @LIBHID@ @LIBBT@ -lm
+avrdude_LDADD  = $(top_builddir)/$(noinst_LIBRARIES) @LIBUSB@ @LIBHID@ -lm
 
 bin_PROGRAMS = avrdude
 
@@ -88,6 +88,8 @@ libavrdude_a_SOURCES = \
 	avrpart.h \
 	bitbang.c \
 	bitbang.h \
+	bluec.c \
+	bluec.h \
 	buspirate.c \
 	buspirate.h \
 	butterfly.c \
@@ -128,11 +130,10 @@ libavrdude_a_SOURCES = \
 	ser_avrdoper.c \
 	ser_posix.c \
 	RFComm-Prefix.h \
-	bt_macos.m \
-	RFComm.m \
-	RingBuffer.m \
 	ser_win32.c \
 	solaris_ecpp.h \
+	bluec.c \
+	bluec.h \
 	stk500.c \
 	stk500.h \
 	stk500_private.h \

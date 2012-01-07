@@ -21,7 +21,7 @@
 #                  jtagmki | jtagmkii | jtagmkii_isp | jtagmkii_dw |
 #                  jtagmkII_avr32 | jtagmkii_pdi |
 #                  dragon_dw | dragon_jtag | dragon_isp | dragon_pp |
-#                  dragon_hvsp | dragon_pdi | arduino; # programmer type
+#                  dragon_hvsp | dragon_pdi | arduino | bluec; # programmer type
 #       baudrate = <num> ;                          # baudrate for avr910-programmer
 #       vcc      = <num1> [, <num2> ... ] ;         # pin number(s)
 #       reset    = <num> ;                          # pin number
@@ -342,6 +342,12 @@ programmer
   id    = "avrisp2";
   desc  = "Atmel AVR ISP mkII";
   type  =  stk500v2;
+;
+
+programmer
+  id    = "bluec";
+  desc  = "BlueController";
+  type  = bluec;
 ;
 
 programmer

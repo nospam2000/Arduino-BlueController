@@ -66,22 +66,6 @@ if test x$have_libusb = xyes; then
 fi
 AC_SUBST(LIBUSB, $LIBUSB)
 
-#if test x$have_bluetooth = xyes; then
-   case $target in
-       *-*-darwin*)
-               AC_DEFINE([HAVE_BLUETOOTH], [], [bluetooth is available])
-               AC_PROG_OBJC
-               LIBBT="-framework CoreFoundation -framework IOKit -framework Cocoa -framework IOBluetooth -framework Foundation"
-               ;;
-       *)
-               #LIBBT="-lbt"
-               LIBBT=""
-               ;;
-   esac
-#fi
-AC_SUBST(LIBBT, $LIBBT)
-
-
 # Checks for header files.
 AC_CHECK_HEADERS([limits.h stdlib.h string.h])
 AC_CHECK_HEADERS([fcntl.h sys/ioctl.h sys/time.h termios.h unistd.h])

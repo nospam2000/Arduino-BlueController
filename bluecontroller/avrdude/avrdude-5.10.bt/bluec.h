@@ -1,6 +1,6 @@
 /*
  * avrdude - A Downloader/Uploader for AVR device programmers
- * Copyright (C) 2002-2004  Brian S. Dean <bsd@bsdhome.com>
+ * Copyright (C) 2011 Michael Dreher
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,30 +17,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/* $Id: stk500.h 845 2009-10-10 01:41:40Z mludvig $ */
+/* $Id: bluec.h 808 2009-02-25 09:39:04Z joerg_wunsch $ */
 
-#ifndef stk500_h
-#define stk500_h
+#ifndef bluec_h__
+#define bluec_h__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void stk500_initpgm (PROGRAMMER * pgm);
-
-/* used by arduino.c to avoid duplicate code */
-int stk500_getsync(PROGRAMMER * pgm);
-int stk500_drain(PROGRAMMER * pgm, int display);
-
-/* used by bluec.c to avoid duplicate code */
-int stk500_send(PROGRAMMER * pgm, unsigned char * buf, size_t len);
-int stk500_recv(PROGRAMMER * pgm, unsigned char * buf, size_t len);
-int stk500_loadaddr(PROGRAMMER * pgm, unsigned int addr);
-int stk500_is_page_empty(unsigned int address, int page_size, const unsigned char *buf);
-
-#ifdef __cplusplus
-}
-#endif
+void bluec_initpgm (PROGRAMMER * pgm);
 
 #endif
 
