@@ -1,3 +1,7 @@
+2012-01-21  Michael Dreher <michael@5dot1.de>
+
+        * added new programmer type 'BlueController'
+
 2010-01-19  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* configure.ac: Released version 5.10.

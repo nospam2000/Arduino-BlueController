@@ -118,7 +118,6 @@ SIGN     [+-]
 
 allowfullpagebitstream { yylval=NULL; return K_ALLOWFULLPAGEBITSTREAM; }
 arduino          { yylval=NULL; return K_ARDUINO; }
-bluec            { yylval=NULL; return K_BLUEC; }
 avr910           { yylval=NULL; return K_AVR910; }
 avr910_devcode   { yylval=NULL; return K_AVR910_DEVCODE; }
 usbasp           { yylval=NULL; return K_USBASP; }
@@ -126,6 +125,7 @@ usbtiny          { yylval=NULL; return K_USBTINY; }
 bank_size        { yylval=NULL; return K_PAGE_SIZE; }
 banked           { yylval=NULL; return K_PAGED; }
 baudrate         { yylval=NULL; return K_BAUDRATE; }
+bluec            { yylval=NULL; return K_BLUEC; }
 bs2              { yylval=NULL; return K_BS2; }
 buff             { yylval=NULL; return K_BUFF; }
 buspirate        { yylval=NULL; return K_BUSPIRATE; }

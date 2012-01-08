@@ -209,6 +209,11 @@ has a firmware version of at least 6.11 (decimal).
 The Arduino (which is very similar to the STK500 1.x) is supported via
 its own programmer type specification ``arduino''.
 
+The BlueController ("bluec") is also very similar to the STK500 1.x but uses
+a performances optimized transfer mechanism for page read/write. Actually
+the BlueController hardware can be also used with the STK500 1.x or Arduino 
+programmer type but with a much lower speed.
+
 The BusPirate is a versatile tool that can also be used as an AVR programmer.
 A single BusPirate can be connected to up to 3 independent AVRs. See
 the section on
