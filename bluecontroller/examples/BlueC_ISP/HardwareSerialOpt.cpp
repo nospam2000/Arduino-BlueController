@@ -18,6 +18,7 @@
   
   Modified 23 November 2006 by David A. Mellis
   Modified 28 September 2010 by Mark Sproul
+  Modified 2011 by Michael Dreher to suppport buffer sizes >256 bytes
 */
 
 // Some methods are not IRQ-safe, that means some of the variables are also modified in the ISR (especially rx_buffer->head)
