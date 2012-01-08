@@ -29,15 +29,17 @@
 #include "ac_cfg.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <unistd.h>
 
 #include "avrdude.h"
+#include "avr.h"
 #include "pgm.h"
 #include "stk500_private.h"
 #include "stk500.h"
 #include "serial.h"
-#include "avr.h"
 
 static int bluec_paged_load(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m, 
                              int page_size, int n_bytes)
@@ -159,8 +161,8 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
 {
   int rc = n_bytes; // return code, negative on failure
 
-  const uint16_t bufSize = 1024;
-  uint8_t buf[bufSize]; // for receiving a failed verify notification we need some reserve
+  const unsigned int bufSize = 1024;
+  unsigned char buf[bufSize]; // for receiving a failed verify notification we need some reserve
   //int block_size;
   //int tries;
   int32_t i;
@@ -201,15 +203,15 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
     return rc;
   }
   bulkOptions &= buf[1]; // maybe not all requested options could be enabled, so mask out the ones which aren't active
-  const uint16_t windowSize = buf[2] | buf[3] << 8;
-  uint32_t writePos = 0; // counting of the written protocol bytes, starts after reading BULK_WRITE_START_ACK
-  uint32_t ackPos = 0; // counting of the acknowledged protocol bytes, starts after reading BULK_WRITE_START_ACK
+  const unsigned int windowSize = buf[2] | buf[3] << 8;
+  unsigned long writePos = 0; // counting of the written protocol bytes, starts after reading BULK_WRITE_START_ACK
+  unsigned long ackPos = 0; // counting of the acknowledged protocol bytes, starts after reading BULK_WRITE_START_ACK
 
-  const uint16_t mtu = 126; // this is what I get for a RFComm commnection on Mac OSX 10.7 TODO: should be read from serial driver after connecting
-  //const uint16_t minimumBlockSize = 64; // don't send smaller packets
-  const uint16_t writeDataOverhead = 6; // the protocol overhead of STK_BULK_WRITE_DATA
-  const uint16_t writeVrfyOverhead = 8; // the protocol overhead of BULK_WRITE_VRFY_ERR
-  uint16_t block_size = mtu - writeDataOverhead; // netto data of one block
+  const unsigned int mtu = 126; // this is what I get for a RFComm commnection on Mac OSX 10.7 TODO: should be read from serial driver after connecting
+  //const unsigned int minimumBlockSize = 64; // don't send smaller packets
+  const unsigned int writeDataOverhead = 6; // the protocol overhead of STK_BULK_WRITE_DATA
+  const unsigned int writeVrfyOverhead = 8; // the protocol overhead of BULK_WRITE_VRFY_ERR
+  unsigned int block_size = mtu - writeDataOverhead; // netto data of one block
   if((block_size + writeDataOverhead) > bufSize)
     block_size = bufSize - writeDataOverhead;
   if(block_size > (windowSize - 2) / 2) // make sure at least two blocks can be traveling at the same time
@@ -239,10 +241,10 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
 
       if(remain > 0)
       {
-        uint16_t cursize = block_size;
+        unsigned int cursize = block_size;
         if(cursize > remain)
           cursize = remain;
-        uint16_t crc = 0;
+        unsigned int crc = 0;
         i = 0;
         buf[i++] = Cmnd_STK_BULK_WRITE_DATA;
         buf[i++] = crc & 0xff;
@@ -309,7 +311,7 @@ fprintf(stderr, "END\n");
             goto bulkReceiveEnd;
           }
           ackPos = buf[6] | (buf[7] << 8) | (buf[8] << 16) | (buf[8] << 24);
-          uint32_t ackAddr = buf[2] | (buf[3] << 8) | (buf[4] << 16) | (buf[5] << 24);
+          unsigned long ackAddr = buf[2] | (buf[3] << 8) | (buf[4] << 16) | (buf[5] << 24);
 #ifdef DEBUG_TRACE_BULK
 fprintf(stderr, "ackn(%6d, %6d, %6d, %6d, cmd=0x%02x)\n", writePos, ackPos, byteAddr, ackAddr, buf[0]);
 #endif
@@ -343,8 +345,8 @@ fprintf(stderr, "ackn(%6d, %6d, %6d, %6d, cmd=0x%02x)\n", writePos, ackPos, byte
             rc = -4;
             goto bulkReceiveEnd;
           }
-          uint32_t vrfyAddr = buf[1] | (buf[2] << 8) | (buf[3] << 16) | (buf[4] << 24);
-          uint16_t curSize = buf[5] | (buf[6] << 8);
+          unsigned long vrfyAddr = buf[1] | (buf[2] << 8) | (buf[3] << 16) | (buf[4] << 24);
+          unsigned int curSize = buf[5] | (buf[6] << 8);
           if ((curSize + writeVrfyOverhead) > bufSize)
           {
             fprintf(stderr, "%s: bluec_bulk_write(): Overflow while reading data of VRFY_ERR\n", progname);
@@ -364,14 +366,14 @@ fprintf(stderr, "ackn(%6d, %6d, %6d, %6d, cmd=0x%02x)\n", writePos, ackPos, byte
             goto bulkReceiveEnd;
           }
           // TODO: add detailed error message. We continue flashing but show the error.
-          fprintf(stderr, "%s: bluec_bulk_write(): Verify error for addr 0x%04x, page size %u\n", progname, vrfyAddr, curSize);
+          fprintf(stderr, "%s: bluec_bulk_write(): Verify error for addr 0x%04lx, page size %u\n", progname, vrfyAddr, curSize);
           fprintf(stderr, "  addr:  read != orig\n");
           int vi;
           for(vi = 0; vi < curSize; vi++)
           {
             if(buf[vi + writeVrfyOverhead - 1] != m->buf[vrfyAddr + vi])
             {
-              fprintf(stderr, "0x%04x:  0x%02x != 0x%02x\n", vrfyAddr + vi, buf[vi + writeVrfyOverhead - 1], m->buf[vrfyAddr + vi]);
+              fprintf(stderr, "0x%04lx:  0x%02x != 0x%02x\n", vrfyAddr + vi, buf[vi + writeVrfyOverhead - 1], m->buf[vrfyAddr + vi]);
             }
           }
           //rc = -3;
