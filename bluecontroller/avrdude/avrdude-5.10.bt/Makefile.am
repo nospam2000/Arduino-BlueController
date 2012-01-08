@@ -129,7 +129,6 @@ libavrdude_a_SOURCES = \
 	serbb_win32.c \
 	ser_avrdoper.c \
 	ser_posix.c \
-	RFComm-Prefix.h \
 	ser_win32.c \
 	solaris_ecpp.h \
 	bluec.c \

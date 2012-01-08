@@ -24,7 +24,6 @@
 
    ser_posix.c : posix serial interface.
    ser_win32.c : native win32 serial interface.
-   RFComm.c    : bluetooth Serial Port Profile (SPP)
 
    The target file will be selected at configure time. */
 
@@ -65,7 +64,6 @@ extern struct serial_device serial_serdev;
 extern struct serial_device usb_serdev;
 extern struct serial_device usb_serdev_frame;
 extern struct serial_device avrdoper_serdev;
-extern struct serial_device bt_serdev;
 
 #define serial_open (serdev->open)
 #define serial_setspeed (serdev->setspeed)
