@@ -131,8 +131,6 @@ libavrdude_a_SOURCES = \
 	ser_posix.c \
 	ser_win32.c \
 	solaris_ecpp.h \
-	bluec.c \
-	bluec.h \
 	stk500.c \
 	stk500.h \
 	stk500_private.h \

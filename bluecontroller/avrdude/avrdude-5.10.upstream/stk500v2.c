@@ -667,7 +667,7 @@ static int stk500v2_getsync(PROGRAMMER * pgm) {
 
   DEBUG("STK500V2: stk500v2_getsync()\n");
 
-  if ((PDATA(pgm)->pgmtype == PGMTYPE_JTAGICE_MKII) || (PDATA(pgm)->pgmtype == PGMTYPE_AVRISP_MKII))
+  if (PDATA(pgm)->pgmtype == PGMTYPE_JTAGICE_MKII)
     return 0;
 
 retry:
