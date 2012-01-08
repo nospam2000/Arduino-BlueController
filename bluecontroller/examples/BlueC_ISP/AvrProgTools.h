@@ -1,3 +1,4 @@
+//  Copyright (c) 2011 Michael Dreher <michael@5dot1.de>.  All rights reserved.
 
 // here you find the functions which are directly related to the ATmega hardware
 // all of the functions are 'inline', so this must be a .h file

@@ -1,3 +1,4 @@
+
 // documentation can be found in:
 //   AVR doc8271.pdf, chapter 27.8.3 "Serial Programming Instruction set"
 //   AVR doc0943.pdf, "AVR910: In System Programming"
@@ -13,9 +14,8 @@
 // 9: Heartbeat - shows the programmer is running
 // 8: Error - Lights up if something goes wrong (use red if that makes sense)
 // 7: Programming - In communication with the slave
-//
 
-// August 2011 by Michael Dreher
+// August 2011 by Michael Dreher <michael@5dot1.de>
 //  - new protocol for asynchronous transmission using a sliding window mechanism, needed
 //    for high performance programming with high-latency communication devices like Bluetooth SPP 
 //  - automatic verify after writing

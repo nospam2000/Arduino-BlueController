@@ -17,7 +17,7 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
   Modified 28 September 2010 by Mark Sproul
-  Modified 2011 by Michael Dreher to suppport buffer sizes >256 bytes
+  Modified 2011 by Michael Dreher <michael@5dot1.de> to suppport buffer sizes >256 bytes
 */
 
 #ifndef HardwareSerialOpt_h

@@ -1,3 +1,4 @@
+// Copyright (c) 2011 Michael Dreher <michael@5dot1.de>.  All rights reserved.
 // here you find the lowlevel communication functions
 // all of the functions are 'inline', so this must be a .h file
 // getch with timeOut, return (int)-1 on timeOut
