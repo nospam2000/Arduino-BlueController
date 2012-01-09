@@ -37,6 +37,8 @@ int stk500_send(PROGRAMMER * pgm, unsigned char * buf, size_t len);
 int stk500_recv(PROGRAMMER * pgm, unsigned char * buf, size_t len);
 int stk500_loadaddr(PROGRAMMER * pgm, unsigned int addr);
 int stk500_is_page_empty(unsigned int address, int page_size, const unsigned char *buf);
+int stk500_paged_load(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m, int page_size, int n_bytes);
+int stk500_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m, int page_size, int n_bytes);
 
 #ifdef __cplusplus
 }

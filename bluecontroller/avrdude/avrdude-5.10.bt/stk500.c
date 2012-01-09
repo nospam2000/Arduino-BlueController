@@ -734,7 +734,7 @@ int stk500_loadaddr(PROGRAMMER * pgm, unsigned int addr)
 }
 
 
-static int stk500_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m, 
+int stk500_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m, 
                               int page_size, int n_bytes)
 {
   unsigned char buf[page_size + 16];
@@ -883,7 +883,7 @@ int stk500_is_page_empty(unsigned int address, int page_size,
     return(1);
 }
 
-static int stk500_paged_load(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m, 
+int stk500_paged_load(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m, 
                              int page_size, int n_bytes)
 {
   unsigned char buf[16];

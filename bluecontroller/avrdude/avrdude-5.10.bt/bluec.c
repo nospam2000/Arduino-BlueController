@@ -44,115 +44,8 @@
 static int bluec_paged_load(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m, 
                              int page_size, int n_bytes)
 {
-  // XXX TODO: move this to a programmer specific file
-  page_size = n_bytes;
-
-  unsigned char buf[16];
-  int memtype;
-  unsigned int addr;
-  int a_div;
-  int tries;
-  unsigned int n;
-  int block_size;
-
-  if (strcmp(m->desc, "flash") == 0) {
-    memtype = 'F';
-  }
-  else if (strcmp(m->desc, "eeprom") == 0) {
-    memtype = 'E';
-  }
-  else {
-    return -2;
-  }
-
-  if ((m->op[AVR_OP_LOADPAGE_LO]) || (m->op[AVR_OP_READ_LO]))
-    a_div = 2;
-  else
-    a_div = 1;
-
-  if (n_bytes > m->size) {
-    n_bytes = m->size;
-    n = m->size;
-  }
-  else {
-    if ((n_bytes % page_size) != 0) {
-      n = n_bytes + page_size - (n_bytes % page_size);
-    }
-    else {
-      n = n_bytes;
-    }
-  }
-
-  for (addr = 0; addr < n; addr += page_size) {
-    report_progress (addr, n_bytes, NULL);
-
-    // MIB510 uses fixed blocks size of 256 bytes
-    if ((strcmp(ldata(lfirst(pgm->id)), "mib510") != 0) &&
-	(addr + page_size > n_bytes)) {
-	   block_size = n_bytes % page_size;
-	}
-	else {
-	   block_size = page_size;
-	}
-  
-    tries = 0;
-  retry:
-    tries++;
-    stk500_loadaddr(pgm, addr/a_div);
-    buf[0] = Cmnd_STK_READ_PAGE;
-    buf[1] = (block_size >> 8) & 0xff;
-    buf[2] = block_size & 0xff;
-    buf[3] = memtype;
-    buf[4] = Sync_CRC_EOP;
-    stk500_send(pgm, buf, 5);
-
-    if (stk500_recv(pgm, buf, 1) < 0)
-      exit(1);
-    if (buf[0] == Resp_STK_NOSYNC) {
-      if (tries > 33) {
-        fprintf(stderr, "\n%s: stk500_paged_load(): can't get into sync\n",
-                progname);
-        return -3;
-      }
-      if (stk500_getsync(pgm) < 0)
-	return -1;
-      goto retry;
-    }
-    else if (buf[0] != Resp_STK_INSYNC) {
-      fprintf(stderr,
-              "\n%s: stk500_paged_load(): (a) protocol error, "
-              "expect=0x%02x, resp=0x%02x\n", 
-              progname, Resp_STK_INSYNC, buf[0]);
-      return -4;
-    }
-
-    if (stk500_recv(pgm, &m->buf[addr], block_size) < 0)
-      exit(1);
-
-    if (stk500_recv(pgm, buf, 1) < 0)
-      exit(1);
-
-    if(strcmp(ldata(lfirst(pgm->id)), "mib510") == 0) {
-      if (buf[0] != Resp_STK_INSYNC) {
-      fprintf(stderr,
-              "\n%s: bluec_paged_load(): (a) protocol error, "
-              "expect=0x%02x, resp=0x%02x\n", 
-              progname, Resp_STK_INSYNC, buf[0]);
-      return -5;
-    }
-  }
-    else {
-      if (buf[0] != Resp_STK_OK) {
-        fprintf(stderr,
-                "\n%s: bluec_paged_load(): (a) protocol error, "
-                "expect=0x%02x, resp=0x%02x\n",
-                progname, Resp_STK_OK, buf[0]);
-        return -5;
-      }
-    }
-  }
-
-  return n_bytes;
+  // using a large page_size (which is in fact a block_size and not a page_size!) 
+  return stk500_paged_load(pgm, p, m, 16384, n_bytes);
 }
 
 
@@ -163,10 +56,7 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
 
   const unsigned long bufSize = 1024;
   unsigned char buf[bufSize]; // for receiving a failed verify notification we need some reserve
-  //int block_size;
-  //int tries;
   int32_t i;
-  //int flash;
 
   int a_div; // 1 means byte adressing, 2 means word addressing
   if ((m->op[AVR_OP_LOADPAGE_LO]) || (m->op[AVR_OP_READ_LO]))
@@ -227,12 +117,10 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
   unsigned int byteAddr = 0;
   for(;;)
   {
-    //report_progress (byteAddr, n_bytes, NULL); // TODO: disabled during debugging
+    report_progress (byteAddr, n_bytes, NULL);
 
     int32_t remain;
     int32_t availWindowSize;
-    //int32_t loadAddr; // not really needed here
-    //loadAddr = byteAddr / a_div; // TODO: calculate from byteAddr when needed
     // TODO: handle the case when no whole block is available but no ACKs are arriving. Fallback to smaller blocks
     while((availWindowSize = (windowSize - (writePos - ackPos))) >= block_size)
     {
@@ -440,198 +328,16 @@ bulkReceiveEnd:
 static int bluec_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m, 
                               int page_size, int n_bytes)
 {
-  int memtype;
-  unsigned int addr;
-  int a_div;
-  int block_size;
-  int tries;
-  unsigned int n;
-  unsigned int i;
-  int flash;
-
-  if (page_size == 0) {
-    // MIB510 uses page size of 256 bytes
-    if (strcmp(ldata(lfirst(pgm->id)), "mib510") == 0) {
-      page_size = 256;
-    }
-    else {
-      page_size = 128;
-    }
-  }
-
-  unsigned char buf[4 + page_size + 16];
-  //fprintf(stderr, "\n%s: bluec_paged_write(): page_size=%d\n", progname, page_size);
-
-  if (strcmp(m->desc, "flash") == 0) {
-    memtype = 'F';
-    flash = 1;
-  }
-  else if (strcmp(m->desc, "eeprom") == 0) {
-    memtype = 'E';
-    flash = 0;
-  }
-  else {
-    return -2;
-  }
-
-  if ((m->op[AVR_OP_LOADPAGE_LO]) || (m->op[AVR_OP_READ_LO]))
-    a_div = 2;
-  else
-    a_div = 1;
-
-  if (n_bytes > m->size) {
-    n_bytes = m->size;
-    n = m->size;
-  }
-  else {
-    if ((n_bytes % page_size) != 0) {
-      n = n_bytes + page_size - (n_bytes % page_size);
-    }
-    else {
-      n = n_bytes;
-    }
-  }
-
-#if 0
-  fprintf(stderr, 
-          "n_bytes   = %d\n"
-          "n         = %u\n"
-          "a_div     = %d\n"
-          "page_size = %d\n",
-          n_bytes, n, a_div, page_size);
-#endif     
-
-  if(flash == 1)
+  if (strcmp(m->desc, "flash") == 0)
   {
     int bulk_rc = bluec_bulk_write(pgm, p, m, page_size, n_bytes);
     if(bulk_rc >= 0)
       return bulk_rc;
 
-    // when bulk write failed, fall back to paged_write
   }
 
-  int windowSize = 0;
-  long curSend = 0;
-  long curAck = 0;
-  for (addr = 0; addr < n; addr += page_size) {
-    report_progress (addr, n_bytes, NULL);
-    
-    // MIB510 uses fixed blocks size of 256 bytes
-    if ((strcmp(ldata(lfirst(pgm->id)), "mib510") != 0) &&
-      (addr + page_size > n_bytes)) {
-	      block_size = n_bytes % page_size;
-    }
-	  else {
-	   block_size = page_size;
-	  }
-
-    /* Only skip on empty page if programming flash. */
-    if (flash) {
-      if (stk500_is_page_empty(addr, block_size, m->buf)) {
-          continue;
-      }
-    }
-    tries = 0;
-//  retry:
-    tries++;
-    //stk500_loadaddr(pgm, addr/a_div);
-    //curSend++;
-
-    /* build command block and avoid multiple send commands as it leads to a crash
-        of the silabs usb serial driver on mac os x */
-    i = 0;
-    // loadaddress command
-    // TODO: combining two commands together won't work on slow programmers
-    unsigned int loadAddr = addr/a_div;
-    buf[i++] = Cmnd_STK_LOAD_ADDRESS;
-    buf[i++] = loadAddr & 0xff;
-    buf[i++] = (loadAddr >> 8) & 0xff;
-    buf[i++] = Sync_CRC_EOP;
-
-    // prog command
-    buf[i++] = Cmnd_STK_PROG_PAGE;
-    buf[i++] = (block_size >> 8) & 0xff;
-    buf[i++] = block_size & 0xff;
-    buf[i++] = memtype;
-    memcpy(&buf[i], &m->buf[addr], block_size);
-    i += block_size;
-    buf[i++] = Sync_CRC_EOP;
-    stk500_send( pgm, buf, i);
-    curSend += 2; // 2 commands
-
-    while(curSend > (curAck + windowSize*2))
-    {
-      curAck++;
-      //fprintf(stderr, "\n%s: stk500_paged_write(): curSend=%ld, curAck=%ld\n", progname, curSend, curAck);
-      if (stk500_recv(pgm, buf, 1) < 0)
-        exit(1);
-      if (buf[0] == Resp_STK_NOSYNC) {
-        //if (tries > 33) {
-          fprintf(stderr, "\n%s: stk500_paged_write(): can't get into sync\n",
-                  progname);
-          return -3;
-        //}
-        //if (stk500_getsync(pgm) < 0)
-    //return -1;
-        //goto retry; // TODO: will not work with windowed ack
-      }
-      else if (buf[0] != Resp_STK_INSYNC) {
-        fprintf(stderr,
-                "\n%s: stk500_paged_write(): (a) protocol error, "
-                "expect=0x%02x, resp=0x%02x\n", 
-                progname, Resp_STK_INSYNC, buf[0]);
-        return -4;
-      }
-      
-      if (stk500_recv(pgm, buf, 1) < 0)
-        exit(1);
-      if (buf[0] != Resp_STK_OK) {
-        fprintf(stderr,
-                "\n%s: stk500_paged_write(): (a) protocol error, "
-                "expect=0x%02x, resp=0x%02x\n", 
-                progname, Resp_STK_INSYNC, buf[0]);
-        return -5;
-      }
-    }
-  }
-
-
-  while(curSend > curAck)
-  {
-    curAck++;
-    //fprintf(stderr, "\n%s: stk500_paged_write(): curAck=%ld\n", progname, curAck);
-    if (stk500_recv(pgm, buf, 1) < 0)
-      exit(1);
-    if (buf[0] == Resp_STK_NOSYNC) {
-      //if (tries > 33) {
-        fprintf(stderr, "\n%s: stk500_paged_write(): can't get into sync\n",
-                progname);
-        return -3;
-      //}
-      //if (stk500_getsync(pgm) < 0)
-  //return -1;
-      //goto retry; // TODO: will not work with windowed ack
-    }
-    else if (buf[0] != Resp_STK_INSYNC) {
-      fprintf(stderr,
-              "\n%s: stk500_paged_write(): (a) protocol error, "
-              "expect=0x%02x, resp=0x%02x\n", 
-              progname, Resp_STK_INSYNC, buf[0]);
-      return -4;
-    }
-    
-    if (stk500_recv(pgm, buf, 1) < 0)
-      exit(1);
-    if (buf[0] != Resp_STK_OK) {
-      fprintf(stderr,
-              "\n%s: stk500_paged_write(): (a) protocol error, "
-              "expect=0x%02x, resp=0x%02x\n", 
-              progname, Resp_STK_INSYNC, buf[0]);
-      return -5;
-    }
-  }
-
-  return n_bytes;
+  // when bulk write failed or memtype!='flash' fall back to paged_write
+  return stk500_paged_write(pgm, p, m, page_size, n_bytes);
 }
 
 
@@ -647,7 +353,6 @@ void bluec_initpgm(PROGRAMMER * pgm)
   //pgm->read_sig_bytes = arduino_read_sig_bytes;
   pgm->paged_write    = bluec_paged_write;
   pgm->paged_load     = bluec_paged_load;
-  pgm->page_size      = 256;
 }
 
 // TODO: remove before committing patch
