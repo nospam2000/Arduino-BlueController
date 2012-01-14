@@ -41,6 +41,7 @@
 #include "avr.h"
 #include "pgm.h"
 #include "stk500_private.h"
+#include "stk500.h"
 #include "serial.h"
 
 #define STK500_XTAL 7372800U
