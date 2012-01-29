@@ -1,0 +1,1 @@
+./avrdude -C ./avrdude.conf -p m328p -c bluec -P /dev/cu.BlueController2 -D -U lfuse:w:0xe2:m -U hfuse:w:0xd6:m -U efuse:w:0x06:m -U flash:w:../../examples/Setup_BlueController/SetupWithBootloader_328_115200bps.hex:i -U lock:w:0x2f:m
