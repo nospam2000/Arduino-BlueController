@@ -121,18 +121,20 @@ inline void ProcessReceivedBlock(uint16_t blockLen)
       repCnt = SerialOpt.peek(i);
       if(repCnt == 0x00)
       {
-        repCnt = 1; // 0xFF 0x00 => 0xFF 
+        repCnt = 1; // 0xFF 0x00 => 0xFF
+        //val == 0xff;
       }
       else if(repCnt == 0x01)
       {
         repCnt = 2; // 0xFF 0x01 => 0xFF 0xFF
+        //val == 0xff;
       }
       else if(repCnt == 0xff) // 16-bit repCnt
       {
         i += 3;
         if(i >= blockLen)
           goto rleError;
-        repCnt = SerialOpt.peek(i - 2) + SerialOpt.peek(i - 1) << 8;
+        repCnt = SerialOpt.peek(i - 2) | (SerialOpt.peek(i - 1) << 8);
         val = SerialOpt.peek(i);
       }
       else // 8-bit repCnt
