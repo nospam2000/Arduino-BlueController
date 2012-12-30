@@ -177,7 +177,11 @@ inline void flashByte(uint8_t hilo, int addr, uint8_t data) {
     (addr>>8) & 0xFF, // TODO: according to AVR doc8271.pdf, chapter 27.8.3 "Serial Programming Instruction set", table 27-19, this should be 0x00
     addr & 0xFF,
     data);
-  g_outStandingCommit = true;
+
+  if(data != 0xff)
+  {
+    g_outStandingCommit = true;
+  }
 }
 
 
