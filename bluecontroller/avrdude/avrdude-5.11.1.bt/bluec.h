@@ -1,6 +1,6 @@
 /*
- * avrdude - A Downloader/Uploader for AVR device programmers
- * Copyright (C) 2011 Michael Dreher
+ * avrdude support for BlueController ISP programmer
+ * Copyright (C) 2011 Michael Dreher <michael@5dot1.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/* $Id: bluec.h 808 2009-02-25 09:39:04Z joerg_wunsch $ */
+/* $Id: bluec.h $ */
 
 #ifndef bluec_h__
 #define bluec_h__

@@ -1,6 +1,6 @@
 /*
- * avrdude - A Downloader/Uploader for AVR device programmers
- * Copyright (C) 2009 Lars Immisch
+ * avrdude support for BlueController ISP programmer
+ * Copyright (C) 2011 Michael Dreher <michael@5dot1.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,14 +17,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/* $Id: bluec.c 874 2009-11-02 23:52:52Z mludvig $ */
+/* $Id: bluec.c $ */
 
 /*
  * avrdude interface for BlueController programmer
  *
  * The BlueController programmer is mostly a STK500v1, just with additional
- * features for better communication performance for high latency communication
- * paths like Bluetooth or WLAN.
+ * features for better communication performance over high latency communication
+ * paths like Bluetooth or WLAN (around factor 5 faster, especially on iMacs).
+ * Uses asynchronous acknowledge, RLE compression and implicit verify.
  */
 
 #include "ac_cfg.h"
@@ -193,6 +194,10 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
     rc = -1;
     return rc;
   }
+  // The RLE compression may transmit a lot of bytes which need to be processed, so the programmer
+  // will be busy for a long time. This happened with the default timeout (5 seconds) and a 32kB
+  // file which consists of very good compressable data.
+  // TODO: could be solved by more acks for such large blocks
 	serial_recv_timeout = 15000;
   bulkOptions &= buf[1]; // maybe not all requested options could be enabled, so mask out the ones which aren't active
   const unsigned short windowSize = buf[2] | buf[3] << 8;
@@ -205,13 +210,6 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
   if(block_size > (windowSize - 2) / 2) // make sure at least two blocks can be traveling at the same time
     block_size = (windowSize - 2) / 2;
 
-  // for(ever)
-  //   while(currentWindowsize allows sending BULK_WRITE_DATA)
-  //     if EOF
-  //       BULK_WRITE_END, exit both loops
-  //     BULK_WRITE_DATA, depending on time and size conditions even packets smaller than MTU may be send
-  //   read_event (and sleep until data has arrived)
-  //     process events
   unsigned int byteAddr = 0;
   for(;;)
   {
@@ -237,10 +235,6 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
         stk500_send(pgm, buf, i); // TODO: handle error
         writePos += i;
         byteAddr += srcUsed;
-
-#ifdef DEBUG_TRACE_BULK
-fprintf(stderr, "send(%6d, %6d, %6d, %6d)\n", writePos, ackPos, byteAddr, cursize);
-#endif
       }
       else
       {
@@ -254,9 +248,6 @@ fprintf(stderr, "send(%6d, %6d, %6d, %6d)\n", writePos, ackPos, byteAddr, cursiz
     if((remain == 0) && (availWindowSize >= BULK_WRITE_END_TELEGRAM_LEN))
     {
       // end of data reached, just handle outstanding notifications as long as ackPos < writePos
-#ifdef DEBUG_TRACE_BULK
-fprintf(stderr, "END\n");
-#endif
       i = 0;
       buf[i++] = Cmnd_STK_BULK_WRITE_END;
       buf[i++] = Sync_CRC_EOP;
@@ -273,9 +264,6 @@ fprintf(stderr, "END\n");
     }
     else
     {
-#ifdef DEBUG_TRACE_BULK
-//fprintf(stderr, "recv(%6d, %6d, %6d, cmd=0x%02x)\n", writePos, ackPos, byteAddr, buf[0]);
-#endif
       switch(buf[0])
       {
         case Resp_STK_BULK_WRITE_ACK:
@@ -293,9 +281,6 @@ fprintf(stderr, "END\n");
           }
           ackPos = buf[6] | (buf[7] << 8) | (buf[8] << 16) | (buf[8] << 24);
           unsigned long ackAddr = buf[2] | (buf[3] << 8) | (buf[4] << 16) | (buf[5] << 24);
-#ifdef DEBUG_TRACE_BULK
-fprintf(stderr, "ackn(%6d, %6d, %6d, %6d, cmd=0x%02x)\n", writePos, ackPos, byteAddr, ackAddr, buf[0]);
-#endif
           if(buf[1] == Stat_STK_BULK_ACKSTATE_NAK)
           {
             // retransmit from given address; be careful not to mix byteAddr and loadAddr!
@@ -361,9 +346,6 @@ fprintf(stderr, "ackn(%6d, %6d, %6d, %6d, cmd=0x%02x)\n", writePos, ackPos, byte
           break; // continue the loop
 
         case Resp_STK_BULK_WRITE_END_ACK:
-#ifdef DEBUG_TRACE_BULK
-fprintf(stderr, "END Ack\n");
-#endif
           if (stk500_recv(pgm, &buf[1], 7-1) < 0)
           {
             fprintf(stderr, "%s: bluec_bulk_write(): Timeout while reading BULK_WRITE_END_ACK\n", progname);
@@ -427,7 +409,6 @@ static int bluec_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
     int bulk_rc = bluec_bulk_write(pgm, p, m, page_size, n_bytes);
     if(bulk_rc >= 0)
       return bulk_rc;
-
   }
 
   // when bulk write failed or memtype!='flash' fall back to paged_write
@@ -435,16 +416,14 @@ static int bluec_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
 }
 
 
-
 void bluec_initpgm(PROGRAMMER * pgm)
 {
   /* This is mostly a STK500; just using bulk communication optimized for
    * bluetooth.
-         * The DTR signal doesn't matter because it doesn't support auto-reset via DTR */
+   * The DTR signal doesn't matter because it doesn't support auto-reset via DTR */
   stk500_initpgm(pgm);
 
   strcpy(pgm->type, "BlueController");
-  //pgm->read_sig_bytes = arduino_read_sig_bytes;
   pgm->paged_write    = bluec_paged_write;
   pgm->paged_load     = bluec_paged_load;
 }
