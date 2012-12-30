@@ -623,7 +623,7 @@ void verifySpace() {
   else
   {
 #if defined(BLUECONTROLLER) 
-    // ignore error when not synced, otherwise some initial garbage will exit the bootloader
+    // ignore error when not synced, otherwise some initial garbage (e.g. CONNECT message from BT module) will exit the bootloader
     if(blueCAvrdudeSynced)
       appStart();
 #else
