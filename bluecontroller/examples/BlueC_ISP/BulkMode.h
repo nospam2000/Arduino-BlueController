@@ -113,13 +113,13 @@ inline bool ProgByteLocation(uint32_t progByteAddr, uint8_t val)
 
 inline bool isAckAppropriate(bool ignoreTime)
 {
-  bool sendAck = false;
+  bool bSendAck = false;
   uint32_t lag = g_readPos - g_ackPos;
   if(lag > 0)
   {
     if(ignoreTime)
     {
-      sendAck = true;
+      bSendAck = true;
     }
     else
     {
@@ -130,12 +130,12 @@ inline bool isAckAppropriate(bool ignoreTime)
       const uint32_t timeOffset = 14*2; // even when lag is only 1 byte, send ack after this time (ca. 14ms per 126 byte packet)
       if(((lag + lagOffset) * (diffTime + timeOffset)) >= (2*lagOffset*timeOffset))
       {
-        sendAck = true;
+        bSendAck = true;
       }
     }
   }
 
-  return sendAck;
+  return bSendAck;
 }
 
 // 'ignoreTime': when true always send a ACK, even when the time condition or lag condition is not met (like a flush)
@@ -168,7 +168,7 @@ inline void exitBulkMode(void)
 {
   g_commandMode = CMD_MODE_NORMAL;
   progPageWithVerify(g_curPage); // must be always called when setting g_commandMode back to CMD_NORMAL_MODE
-  sendAck(true);
+  sendAck(true); // make sure all acks are sent before sending the response to END BULK MODE 
   g_verifyAddr = 0;
   g_bulkOptions = 0;
 }
@@ -218,6 +218,7 @@ inline void ProcessReceivedBlock(uint16_t blockLen)
       }
     }
       
+    sendAck(false);
     while(repCnt--)
     {
       ProgByteLocation(g_byteAddr++, val);
