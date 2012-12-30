@@ -111,6 +111,58 @@ inline bool ProgByteLocation(uint32_t progByteAddr, uint8_t val)
   g_verifyBuf[g_verifyAddr++] = val;
 }
 
+inline bool isAckAppropriate(bool ignoreTime)
+{
+  bool sendAck = false;
+  uint32_t lag = g_readPos - g_ackPos;
+  if(lag > 0)
+  {
+    if(ignoreTime)
+    {
+      sendAck = true;
+    }
+    else
+    {
+      // if lag gets too big compared to the previous sent ack, send an ack
+      // refer to AckTimeCalculator.ods for the values
+      uint32_t diffTime = millis() - g_prevAckTime;
+      const uint32_t lagOffset = 1*mtu; // send ack when lag >=lagOffset, without any delay
+      const uint32_t timeOffset = 14*2; // even when lag is only 1 byte, send ack after this time (ca. 14ms per 126 byte packet)
+      if(((lag + lagOffset) * (diffTime + timeOffset)) >= (2*lagOffset*timeOffset))
+      {
+        sendAck = true;
+      }
+    }
+  }
+
+  return sendAck;
+}
+
+inline void sendAck(bool ignoreTime)
+{
+  if(isAckAppropriate(ignoreTime))
+  {
+    g_ackPos = g_readPos;
+    uint8_t ackState = Stat_STK_BULK_ACKSTATE_ACK; // TODO: handle NAK
+    bufferedWrite(Resp_STK_BULK_WRITE_ACK);
+    bufferedWrite(ackState);
+
+    bufferedWrite(g_byteAddr & 0xff);
+    bufferedWrite((g_byteAddr >> 8) & 0xff);
+    bufferedWrite((g_byteAddr >> 16) & 0xff);
+    bufferedWrite((g_byteAddr >> 24) & 0xff);
+
+    bufferedWrite(g_ackPos & 0xff);
+    bufferedWrite((g_ackPos >> 8) & 0xff);
+    bufferedWrite((g_ackPos >> 16) & 0xff);
+    bufferedWrite((g_ackPos >> 24) & 0xff);
+    bufferedWrite(Sync_CRC_EOP);
+    flush_writebuf();
+    g_prevAckTime = millis();
+  }  
+}
+
+
 inline void exitBulkMode(void)
 {
   g_commandMode = CMD_MODE_NORMAL;
@@ -176,58 +228,6 @@ rleError:
   abortBulkMode();
   return;
 }
-
-inline bool isAckAppropriate(bool ignoreTime)
-{
-  bool sendAck = false;
-  uint32_t lag = g_readPos - g_ackPos;
-  if(lag > 0)
-  {
-    if(ignoreTime)
-    {
-      sendAck = true;
-    }
-    else
-    {
-      // if lag gets too big compared to the previous sent ack, send an ack
-      // refer to AckTimeCalculator.ods for the values
-      uint32_t diffTime = millis() - g_prevAckTime;
-      const uint32_t lagOffset = 1*mtu; // send ack when lag >=lagOffset, without any delay
-      const uint32_t timeOffset = 14*2; // even when lag is only 1 byte, send ack after this time (ca. 14ms per 126 byte packet)
-      if(((lag + lagOffset) * (diffTime + timeOffset)) >= (2*lagOffset*timeOffset))
-      {
-        sendAck = true;
-      }
-    }
-  }
-
-  return sendAck;
-}
-
-inline void sendAck(bool ignoreTime)
-{
-  if(isAckAppropriate(ignoreTime))
-  {
-    g_ackPos = g_readPos;
-    uint8_t ackState = Stat_STK_BULK_ACKSTATE_ACK; // TODO: handle NAK
-    bufferedWrite(Resp_STK_BULK_WRITE_ACK);
-    bufferedWrite(ackState);
-
-    bufferedWrite(g_byteAddr & 0xff);
-    bufferedWrite((g_byteAddr >> 8) & 0xff);
-    bufferedWrite((g_byteAddr >> 16) & 0xff);
-    bufferedWrite((g_byteAddr >> 24) & 0xff);
-
-    bufferedWrite(g_ackPos & 0xff);
-    bufferedWrite((g_ackPos >> 8) & 0xff);
-    bufferedWrite((g_ackPos >> 16) & 0xff);
-    bufferedWrite((g_ackPos >> 24) & 0xff);
-    bufferedWrite(Sync_CRC_EOP);
-    flush_writebuf();
-    g_prevAckTime = millis();
-  }  
-}
-
 
 inline void processBulkModeCommand(uint8_t cmd)
 {
