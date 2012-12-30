@@ -220,7 +220,7 @@ inline void processBulkModeCommand(uint8_t cmd)
       }
       else
       {
-        g_bulkOptions = SerialOpt.peek(2 - 1) & supportedOptions;
+        g_bulkOptions = SerialOpt.peek(1 - 1) & supportedOptions;
         bufferedWrite(Resp_STK_BULK_WRITE_START_ACK);
         bufferedWrite(g_bulkOptions);
         bufferedWrite(windowSize & 0xff);
