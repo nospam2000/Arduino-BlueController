@@ -347,7 +347,7 @@ fprintf(stderr, "ackn(%6d, %6d, %6d, %6d, cmd=0x%02x)\n", writePos, ackPos, byte
             goto bulkReceiveEnd;
           }
           // TODO: add detailed error message. We continue flashing but show the error.
-          fprintf(stderr, "%s: bluec_bulk_write(): Verify error for addr 0x%04lx, page size %u\n", progname, vrfyAddr, curSize);
+          fprintf(stderr, "%s: bluec_bulk_write(): Verify error for page 0x%04lx, page size %u\n", progname, vrfyAddr, curSize);
           fprintf(stderr, "  addr:  read != orig\n");
           int vi;
           for(vi = 0; vi < curSize; vi++)
