@@ -16,6 +16,8 @@
 // 8: Error - Lights up if something goes wrong (use red if that makes sense)
 // 7: Programming - In communication with the slave
 
+// December 2012 by Michael Dreher <michael@5dot1.de>
+//  - fixed some bugs in RLE code and in option handling
 // August 2011 by Michael Dreher <michael@5dot1.de>
 //  - Performance enhancements for Bluetooth transmission:
 //    - New protocol for asynchronous transmission using a sliding window mechanism.
