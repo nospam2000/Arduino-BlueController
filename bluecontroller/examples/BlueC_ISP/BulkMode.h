@@ -138,6 +138,7 @@ inline bool isAckAppropriate(bool ignoreTime)
   return sendAck;
 }
 
+// 'ignoreTime': when true always send a ACK, even when the time condition or lag condition is not met (like a flush)
 inline void sendAck(bool ignoreTime)
 {
   if(isAckAppropriate(ignoreTime))
