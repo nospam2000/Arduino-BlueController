@@ -153,6 +153,7 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
                               int page_size, int n_bytes)
 {
   int rc = n_bytes; // return code, negative on failure
+  long orig_serial_recv_timeout = serial_recv_timeout;
 
   const unsigned long bufSize = 1024;
   unsigned char buf[bufSize]; // for receiving a failed verify notification we need some reserve
@@ -192,6 +193,7 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
     rc = -1;
     return rc;
   }
+  serial_recv_timeout = 15000;
   bulkOptions &= buf[1]; // maybe not all requested options could be enabled, so mask out the ones which aren't active
   const unsigned short windowSize = buf[2] | buf[3] << 8;
   unsigned long writePos = 0; // counting of the written protocol bytes, starts after reading BULK_WRITE_START_ACK
@@ -412,6 +414,7 @@ bulkReceiveEnd:
   {
   }
 
+  serial_recv_timeout = orig_serial_recv_timeout;
   return rc;
 }
 
