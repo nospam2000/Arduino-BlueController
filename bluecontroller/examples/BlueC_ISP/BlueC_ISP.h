@@ -1,6 +1,7 @@
 
 // documentation can be found in:
 //   AVR doc8271.pdf, chapter 27.8.3 "Serial Programming Instruction set"
+//   AVR doc2549.pdf, chapter 30.8.3 "Serial Programming Instruction set"
 //   AVR doc0943.pdf, "AVR910: In System Programming"
 //   AVR doc2525.pdc, AVR061: STK500 Communication Protocol
 
@@ -16,13 +17,18 @@
 // 7: Programming - In communication with the slave
 
 // August 2011 by Michael Dreher <michael@5dot1.de>
-//  - new protocol for asynchronous transmission using a sliding window mechanism, needed
-//    for high performance programming with high-latency communication devices like Bluetooth SPP 
-//  - automatic verify after writing
+//  - Performance enhancements for Bluetooth transmission:
+//    - New protocol for asynchronous transmission using a sliding window mechanism.
+//      This is needed for high performance programming with high-latency communication devices like Bluetooth SPP
+//      (escpecially for iMac's using a Bluetooth mouse and keyboard which need around 8s using
+//      the new protocol and 180s with the original protocol),
+//      Could also be useful for WiFi and LAN Arduinos.
+//    - Automatic verify after writing each page (during communication is still running) without transmitting the data again
+//    - Compression of the transmitted data (RLE=run lenght encoding) 
 
 // June 2011 by Michael Dreher
 //  - fixed issue 22 (http://code.google.com/p/mega-isp/issues/detail?id=22)
-//    actually only shortened the time from 50ms to 1ms
+//    (shortened the time from 50ms to 1ms)
 //  - made LED support optional, just comment out the unneeded LED defines
 
 // October 2010 by Randall Bohn
@@ -81,20 +87,28 @@
 #define STK_OPCODE_READ_PROG_MEM_HI      0x28
 #define STK_OPCODE_READ_PROG_MEM_LO      0x20
 #define STK_OPCODE_READ_EEPROM_MEM       0xA0
-#define STK_OPCODE_READ_LOCKBITS         0x58
+//#define STK_OPCODE_READ_LOCKBITS         0x58
 #define STK_OPCODE_READ_SIGBYTE          0x30
-#define STK_OPCODE_READ_FUSEBITS_1       0x50
-#define STK_OPCODE_READ_FUSEBITS_2       0x00
-#define STK_OPCODE_READ_FUSEBITS_HI_1    0x58
-#define STK_OPCODE_READ_FUSEBITS_HI_2    0x08
-#define STK_OPCODE_READ_FUSEBITS_EXT_1   0x50
-#define STK_OPCODE_READ_FUSEBITS_EXT_2   0x08
-#define STK_OPCODE_READ_CALIB_BYTE       0x38
+//#define STK_OPCODE_READ_FUSEBITS_1       0x50
+//#define STK_OPCODE_READ_FUSEBITS_2       0x00
+//#define STK_OPCODE_READ_FUSEBITS_HI_1    0x58
+//#define STK_OPCODE_READ_FUSEBITS_HI_2    0x08
+//#define STK_OPCODE_READ_FUSEBITS_EXT_1   0x50
+//#define STK_OPCODE_READ_FUSEBITS_EXT_2   0x08
+//#define STK_OPCODE_READ_CALIB_BYTE       0x38
 #define STK_OPCODE_WRITE_PROG_MEM_PAGE   0x4C
 #define STK_OPCODE_WRITE_EEPROM_MEM      0xC0
 #define STK_OPCODE_WRITE_EEPROM_MEM_PAGE 0xC2
-#define STK_OPCODE_WRITE_LOCKBITS_1      0xAC
-#define STK_OPCODE_WRITE_LOCKBITS_2      0xE0
+
+// avrdude uses the 'universal' command for these STK commands
+//#define STK_OPCODE_WRITE_LOCKBITS_1      0xAC
+//#define STK_OPCODE_WRITE_LOCKBITS_2      0xE0
+//#define STK_OPCODE_WRITE_FUSEBITS_1      0xAC
+//#define STK_OPCODE_WRITE_FUSEBITS_2      0xA0
+//#define STK_OPCODE_WRITE_FUSEHIBITS_1    0xAC
+//#define STK_OPCODE_WRITE_FUSEHIBITS_2    0xA8
+//#define STK_OPCODE_WRITE_FUSEEXTBITS_1   0xAC
+//#define STK_OPCODE_WRITE_FUSEEXTBITS_2   0xA4
 
 #define peekLe16(index) (SerialOpt.peek(index) + SerialOpt.peek(index+1) * 0x100)
 #define peekBe16(index) (SerialOpt.peek(index) * 0x100 + SerialOpt.peek(index+1))
