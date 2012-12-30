@@ -51,7 +51,7 @@
 
 struct ring_buffer
 {
-  unsigned char buffer[RX_BUFFER_SIZE];
+  volatile unsigned char buffer[RX_BUFFER_SIZE];
   volatile int head;
   volatile int tail;
 };
@@ -59,7 +59,7 @@ struct ring_buffer
 class HardwareSerialOpt : public Stream
 {
   private:
-    ring_buffer *_rx_buffer;
+    volatile ring_buffer *_rx_buffer;
     volatile uint8_t *_ubrrh;
     volatile uint8_t *_ubrrl;
     volatile uint8_t *_ucsra;
