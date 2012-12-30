@@ -23,7 +23,8 @@
  * avrdude interface for BlueController programmer
  *
  * The BlueController programmer is mostly a STK500v1, just with additional
- * features for better communication performance.
+ * features for better communication performance for high latency communication
+ * paths like Bluetooth or WLAN.
  */
 
 #include "ac_cfg.h"
@@ -41,11 +42,110 @@
 #include "stk500.h"
 #include "serial.h"
 
+const unsigned short mtu = 126; // this is what I get for a RFComm commnection on Mac OSX 10.7 TODO: should be read from serial driver after connecting
+//const unsigned short minimumBlockSize = 64; // don't send smaller packets
+const unsigned long writeDataOverhead = 6; // the protocol overhead of STK_BULK_WRITE_DATA
+const unsigned long writeVrfyOverhead = 8; // the protocol overhead of BULK_WRITE_VRFY_ERR
+
 static int bluec_paged_load(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m, 
                              int page_size, int n_bytes)
 {
   // using a large page_size (which is in fact a block_size and not a page_size!) 
   return stk500_paged_load(pgm, p, m, 16384, n_bytes);
+}
+
+// 'dstLen' is the maximum length of the _payload_, for the complete allowed frame length you have to add the protocol overhead
+int bluec_stuff_sendbuf(unsigned char* dstBuf, unsigned short dstLen, unsigned char* srcBuf, unsigned short srcLen, unsigned short* dstUsed, unsigned short *srcUsed)
+{
+  unsigned short cursize = dstLen;
+  if(cursize > srcLen)
+    cursize = srcLen;
+  unsigned short crc = 0; // TODO: has to be calculated
+  int i = 0;
+  dstBuf[i++] = Cmnd_STK_BULK_WRITE_DATA;
+  dstBuf[i++] = crc & 0xff;
+  dstBuf[i++] = (crc >> 8) & 0xff;
+  dstBuf[i++] = cursize & 0xff;
+  dstBuf[i++] = (cursize >> 8) & 0xff;
+
+  memcpy(&dstBuf[i], srcBuf, cursize);
+  i += cursize;
+  dstBuf[i++] = Sync_CRC_EOP;
+
+  *dstUsed = i;
+  *srcUsed = cursize;
+
+  return 0;
+}
+
+// compress the data before sending using a simple run-length-encoding
+int bluec_stuff_sendbuf_rle(unsigned char* dstBuf, unsigned short dstLen, unsigned char* srcBuf, unsigned short srcLen, unsigned short* dstUsed, unsigned short *srcUsed)
+{
+  unsigned short crc = 0; // TODO: has to be calculated
+  unsigned short i = 0;
+  dstBuf[i++] = Cmnd_STK_BULK_WRITE_DATA;
+  i += 2*2; // skip crc and payload length fields here, these will be filled below
+
+  int srcRemain;
+  int dstRemain;
+  long j;
+  unsigned short repCnt;
+  for(j = 0; ((srcRemain = srcLen - j) > 0) && ((dstRemain = dstLen - i) > 0); j += repCnt)
+  {
+    unsigned char val = srcBuf[j];
+    for(repCnt = 1; (repCnt <= srcRemain) && (repCnt < 0xffff) && (val == srcBuf[j + repCnt]); repCnt++)
+    { }
+
+    if((val == 0xff) && (repCnt == 1) && (dstRemain >= 2))
+    {
+      // escape a single 0xFF => 0xFF 0x00
+      dstBuf[i++] = 0xFF;
+      dstBuf[i++] = 0x00;
+    }
+    else if((val == 0xff) && (repCnt == 2) && (dstRemain >= 2))
+    {
+      // optimized case for 0xFF 0xFF => 0xFF 0x01
+      dstBuf[i++] = 0xFF;
+      dstBuf[i++] = 0x01;
+    }
+    else if((val != 0xff) && (repCnt <= 3) && (dstRemain >= 1))
+    {
+      // normal case, directly submit value
+      repCnt = 1;
+      dstBuf[i++] = val;
+    }
+    else if((repCnt <= 254) && (dstRemain >= 3))
+    {
+      // 8-bit repeat count
+      dstBuf[i++] = 0xFF;
+      dstBuf[i++] = repCnt;
+      dstBuf[i++] = val;
+    }
+    else if((repCnt > 254) && (dstRemain >= 5))
+    {
+      // 16-bit repeat count
+      dstBuf[i++] = 0xFF;
+      dstBuf[i++] = 0xFF;
+      dstBuf[i++] = repCnt & 0xff;
+      dstBuf[i++] = (repCnt >> 8) & 0xff;
+      dstBuf[i++] = val;
+    }
+    else
+    {
+      // doesn't fit into current frame
+      break;
+    }
+  }
+
+  dstBuf[i++] = Sync_CRC_EOP;
+  dstBuf[1] = crc & 0xff;
+  dstBuf[2] = (crc >> 8) & 0xff;
+  dstBuf[3] = (i - writeDataOverhead) & 0xff;
+  dstBuf[4] = ((i - writeDataOverhead) >> 8) & 0xff;
+
+  *dstUsed = i;
+  *srcUsed = j;
+  return 0;
 }
 
 
@@ -76,8 +176,8 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
     n_bytes = m->size;
   }
 
-  // TODO: implement RLE and CRC check on client and server side
-  unsigned char bulkOptions = Optn_STK_BULK_WRITE_VERIFY;
+  // TODO: implement CRC check on client and server side
+  unsigned char bulkOptions = Optn_STK_BULK_WRITE_VERIFY | Optn_STK_BULK_WRITE_RLE;
   i = 0;
   buf[i++] = Cmnd_STK_BULK_WRITE_START;
   buf[i++] = bulkOptions;
@@ -97,10 +197,6 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
   unsigned long writePos = 0; // counting of the written protocol bytes, starts after reading BULK_WRITE_START_ACK
   unsigned long ackPos = 0; // counting of the acknowledged protocol bytes, starts after reading BULK_WRITE_START_ACK
 
-  const unsigned short mtu = 126; // this is what I get for a RFComm commnection on Mac OSX 10.7 TODO: should be read from serial driver after connecting
-  //const unsigned short minimumBlockSize = 64; // don't send smaller packets
-  const unsigned long writeDataOverhead = 6; // the protocol overhead of STK_BULK_WRITE_DATA
-  const unsigned long writeVrfyOverhead = 8; // the protocol overhead of BULK_WRITE_VRFY_ERR
   unsigned short block_size = mtu - writeDataOverhead; // netto data of one block
   if((block_size + writeDataOverhead) > bufSize)
     block_size = bufSize - writeDataOverhead;
@@ -126,25 +222,20 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
     {
       // prog command
       remain = n_bytes - byteAddr;
-
       if(remain > 0)
       {
-        unsigned short cursize = block_size;
-        if(cursize > remain)
-          cursize = remain;
-        unsigned short crc = 0;
         i = 0;
-        buf[i++] = Cmnd_STK_BULK_WRITE_DATA;
-        buf[i++] = crc & 0xff;
-        buf[i++] = (crc >> 8) & 0xff;
-        buf[i++] = cursize & 0xff;
-        buf[i++] = (cursize >> 8) & 0xff;
-        memcpy(&buf[i], &m->buf[byteAddr], cursize);
-        i += cursize;
-        buf[i++] = Sync_CRC_EOP;
+        unsigned short dstUsed;
+        unsigned short srcUsed;
+        if(bulkOptions & Optn_STK_BULK_WRITE_RLE)
+          bluec_stuff_sendbuf_rle(buf, block_size, &m->buf[byteAddr], remain, &dstUsed, &srcUsed);
+        else
+          bluec_stuff_sendbuf(buf, block_size, &m->buf[byteAddr], remain, &dstUsed, &srcUsed);
+        i += dstUsed;
         stk500_send(pgm, buf, i); // TODO: handle error
         writePos += i;
-        byteAddr += cursize;
+        byteAddr += srcUsed;
+
 #ifdef DEBUG_TRACE_BULK
 fprintf(stderr, "send(%6d, %6d, %6d, %6d)\n", writePos, ackPos, byteAddr, cursize);
 #endif
@@ -344,8 +435,8 @@ static int bluec_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
 
 void bluec_initpgm(PROGRAMMER * pgm)
 {
-	/* This is mostly a STK500; just using bulk communication optimized for
-	 * bluetooth.
+  /* This is mostly a STK500; just using bulk communication optimized for
+   * bluetooth.
          * The DTR signal doesn't matter because it doesn't support auto-reset via DTR */
   stk500_initpgm(pgm);
 
@@ -356,4 +447,4 @@ void bluec_initpgm(PROGRAMMER * pgm)
 }
 
 // TODO: remove before committing patch
-// vim:ts=2:sw=2:expandtab:smartindent:
+// vim:ts=2:sw=2:expandtab:smartindent:autoindent
