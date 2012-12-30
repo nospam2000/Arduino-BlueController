@@ -32,7 +32,6 @@ const uint8_t supportedOptions = Optn_STK_BULK_WRITE_VERIFY | Optn_STK_BULK_WRIT
 uint8_t g_commandMode = CMD_MODE_NORMAL;
 uint8_t g_bulkOptions = 0;
 uint8_t a_div = 2; // 1 for byte addressing, 2 for word addressing
-bool g_outStandingCommit = false;
 uint8_t g_verifyBuf[256]; // only used for verify
 
 
@@ -335,20 +334,15 @@ void end_pmode()
 inline bool commit(int addr)
 {
   bool rc = true;
-  if(g_outStandingCommit)
-  {
-    if (PROG_FLICKER)
-      prog_lamp(LOW);
+  if (PROG_FLICKER)
+    prog_lamp(LOW);
 
-    // there is at least one byte different from 0xff and the current page is worth programming
-    spi_transaction(STK_OPCODE_WRITE_PROG_MEM_PAGE, (addr >> 8) & 0xFF, addr & 0xFF, 0);
-    WaitForProgramMemPageFinished();
-        
-    if (PROG_FLICKER)
-      prog_lamp(HIGH);
-
-    g_outStandingCommit = false;
-  }
+  // there is at least one byte different from 0xff and the current page is worth programming
+  spi_transaction(STK_OPCODE_WRITE_PROG_MEM_PAGE, (addr >> 8) & 0xFF, addr & 0xFF, 0);
+  WaitForProgramMemPageFinished();
+      
+  if (PROG_FLICKER)
+    prog_lamp(HIGH);
 
   return rc;
 }

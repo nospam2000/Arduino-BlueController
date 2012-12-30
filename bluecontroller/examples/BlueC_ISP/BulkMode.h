@@ -53,11 +53,30 @@ inline bool verify_current_page(void)
   return rc;
 }
 
-inline bool commitWithVerify(int addr) {
+inline bool progPageWithVerify(int pageAddr) {
   bool rc = true;
-  if(g_outStandingCommit)
+
+  bool progNeeded = false;
+  for(int i = 0; i < g_verifyAddr; i++)
   {
-    rc = commit(addr);
+    if(g_verifyBuf[i] != 0xff)
+    {
+      progNeeded = true;
+      break;
+    }
+  }
+  
+  if(progNeeded)
+  {
+    for(int i = 0; i < g_verifyAddr; i++)
+    {
+      uint32_t progByteAddr = (pageAddr * a_div) + i;
+      uint32_t localLoadAddr = (a_div == 2) ? (progByteAddr / 2) : progByteAddr;
+      uint8_t hiLo = (a_div == 2) ? ((progByteAddr & 0x01) ? HIGH : LOW) : HIGH;
+      flashByte(hiLo, localLoadAddr, g_verifyBuf[i]);
+    }
+
+    rc = commit(pageAddr);
 
     if((g_bulkOptions & Optn_STK_BULK_WRITE_VERIFY) && (g_verifyAddr > 0))
       rc = verify_current_page(); // only do this in bulk mode; outside bulk mode g_verifyAddr will be always 0
@@ -76,7 +95,7 @@ inline bool ProgByteLocation(uint32_t progByteAddr, uint8_t val)
   if (newPage != g_curPage)
   {
     // this has to be handled every time the page is changed and on the very end of programming   
-    rc = commitWithVerify(g_curPage);
+    rc = progPageWithVerify(g_curPage);
     if((g_curPage >> 16) != (newPage >> 16))
     {
       set_ext_addr(newPage);
@@ -88,14 +107,15 @@ inline bool ProgByteLocation(uint32_t progByteAddr, uint8_t val)
   // TODO: handle byte addressing, that means do we have to use HIGH or LOW in case of byte addressing?
   uint8_t hiLo = (a_div == 2) ? ((progByteAddr & 0x01) ? HIGH : LOW) : HIGH;
 
-  flashByte(hiLo, localLoadAddr, val);
+  //flashByte(hiLo, localLoadAddr, val); // TODO: for test only
   g_verifyBuf[g_verifyAddr++] = val;
 }
 
 inline void exitBulkMode(void)
 {
   g_commandMode = CMD_MODE_NORMAL;
-  commitWithVerify(g_curPage); // must be always called when setting g_commandMode back to CMD_NORMAL_MODE
+  progPageWithVerify(g_curPage); // must be always called when setting g_commandMode back to CMD_NORMAL_MODE
+  sendAck(true);
   g_verifyAddr = 0;
   g_bulkOptions = 0;
 }
@@ -157,29 +177,36 @@ rleError:
   return;
 }
 
-inline bool isAckAppropriate()
+inline bool isAckAppropriate(bool ignoreTime)
 {
   bool sendAck = false;
   uint32_t lag = g_readPos - g_ackPos;
   if(lag > 0)
   {
-    // if lag gets too big compared to the previous sent ack, send an ack
-    // refer to AckTimeCalculator.ods for the values
-    uint32_t diffTime = millis() - g_prevAckTime;
-    const uint32_t lagOffset = 1*mtu; // send ack when lag >=lagOffset, without any delay
-    const uint32_t timeOffset = 14*2; // even when lag is only 1 byte, send ack after this time (ca. 14ms per 126 byte packet)
-    if(((lag + lagOffset) * (diffTime + timeOffset)) >= (2*lagOffset*timeOffset))
+    if(ignoreTime)
     {
       sendAck = true;
-    } 
+    }
+    else
+    {
+      // if lag gets too big compared to the previous sent ack, send an ack
+      // refer to AckTimeCalculator.ods for the values
+      uint32_t diffTime = millis() - g_prevAckTime;
+      const uint32_t lagOffset = 1*mtu; // send ack when lag >=lagOffset, without any delay
+      const uint32_t timeOffset = 14*2; // even when lag is only 1 byte, send ack after this time (ca. 14ms per 126 byte packet)
+      if(((lag + lagOffset) * (diffTime + timeOffset)) >= (2*lagOffset*timeOffset))
+      {
+        sendAck = true;
+      }
+    }
   }
 
   return sendAck;
 }
 
-inline void sendAckWhenAppropriate()
+inline void sendAck(bool ignoreTime)
 {
-  if(isAckAppropriate())
+  if(isAckAppropriate(ignoreTime))
   {
     g_ackPos = g_readPos;
     uint8_t ackState = Stat_STK_BULK_ACKSTATE_ACK; // TODO: handle NAK
@@ -200,6 +227,7 @@ inline void sendAckWhenAppropriate()
     g_prevAckTime = millis();
   }  
 }
+
 
 inline void processBulkModeCommand(uint8_t cmd)
 {
@@ -235,7 +263,6 @@ inline void processBulkModeCommand(uint8_t cmd)
       g_byteAddr = 0;
       g_verifyAddr = 0;
       g_curPage = 0;
-      g_outStandingCommit = false;
       a_div = (g_bulkOptions & Optn_STK_BULK_WRITE_BYTE_ADR) ? 1 : 2; // 1: byte addressing, 2: word addressing
       if((g_deviceParam.flashsize / a_div) > 0x10000)
       {
@@ -252,6 +279,8 @@ inline void processBulkModeCommand(uint8_t cmd)
     }
     else
     {
+      exitBulkMode(); // this flushes also the verify buffer
+
       consumeInputBuffer(2 - 1);
       uint8_t errorCode = 0; // TODO: set the correct error bits
       bufferedWrite(Resp_STK_BULK_WRITE_END_ACK);
@@ -264,7 +293,6 @@ inline void processBulkModeCommand(uint8_t cmd)
     
       bufferedWrite(Sync_CRC_EOP);
       flush_writebuf();
-      exitBulkMode();
     }
   }
   else if(cmd == Cmnd_STK_BULK_WRITE_DATA)
@@ -317,7 +345,7 @@ inline void processBulkModeCommand(uint8_t cmd)
     flush_writebuf();
   }
 
-  sendAckWhenAppropriate();
+  sendAck(false);
 }
 
 
