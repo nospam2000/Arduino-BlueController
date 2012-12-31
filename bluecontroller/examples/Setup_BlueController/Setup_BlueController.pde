@@ -31,7 +31,10 @@ void setup()
   resetBtm222(); // make sure there is no active connection; escape sequence won't work
   blinkLed(200);
   delay(6000); //wait until the bt module is up and running
-  set_btbaudrate(19200); // must match the bootloader setting
+
+  // ARDUINO_SERIAL_BAUDRATE is either defined in .../hardware/<boardname>/variants/<variant>/pins_arduino.h
+  // or you have to set it manually here when your board has no fixed baud rate
+  set_btbaudrate(ARDUINO_SERIAL_BAUDRATE); // must match the bootloader setting
 
   // these setting make the connection as transparent as possible
   sendBtCmd("\rAT"); // make sure the module is not in sleep mode
@@ -44,7 +47,6 @@ void setup()
   sendBtCmd("ATD0"); // accept connections from any bt device
   sendBtCmd("ATX0"); // disable escape character (default)
   //sendBtCmd("ATS1"); // enable powerdown of rs-232 driver (default)
-  sendBtCmd("ATO"); // reconnect to peer
 
   delay(1000); // allow module to save setting in flash
   resetBtm222(); // activate new settings
@@ -169,7 +171,7 @@ void sendBtCmdCh(char c)
 #define LEDPIN PINB
 #define LEDDDR DDRB
 
-#define BTM222RESET static_cast<byte>(7)  // select the pin for the LED
+#define BTM222RESET static_cast<byte>(7)  // select the pin for BTM-222 reset (active low)
 #define BTM222RESETPORT PORTB // select the port for the LED
 #define BTM222RESETPIN PINB
 #define BTM222RESETDDR DDRB

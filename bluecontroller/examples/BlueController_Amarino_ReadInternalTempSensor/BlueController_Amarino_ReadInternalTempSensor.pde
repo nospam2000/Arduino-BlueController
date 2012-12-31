@@ -35,7 +35,10 @@ MeetAndroid meetAndroid(amarinoError);
 
 void setup()
 {
-  Serial.begin(19200);
+  // ARDUINO_SERIAL_BAUDRATE is either defined in .../hardware/<boardname>/variants/<variant>/pins_arduino.h
+  // or you have to set it manually here when your board has no fixed baud rate
+  Serial.begin(ARDUINO_SERIAL_BAUDRATE);
+
   delay(100);
   chipTempRaw(); // discard first sample
 

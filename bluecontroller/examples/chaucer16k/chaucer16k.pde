@@ -295,10 +295,14 @@ prog_char knightsTale[] PROGMEM= {
 void setup() {
   int i=0;
   uint8_t c;
-  Serial.begin(9600);
+
+  // ARDUINO_SERIAL_BAUDRATE is either defined in .../hardware/<boardname>/variants/<variant>/pins_arduino.h
+  // or you have to set it manually here when your board has no fixed baud rate
+  Serial.begin(ARDUINO_SERIAL_BAUDRATE);
+
   do {
     c = pgm_read_byte(knightsTale+i);
-    if (c) Serial.print(c,BYTE);
+    if (c) Serial.write(c);
     i++;
   } while (c);
 }
