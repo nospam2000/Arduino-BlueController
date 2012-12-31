@@ -1,0 +1,21 @@
+#!/bin/bash
+make clean
+make virboot328
+make lilypad
+make lilypad_resonator
+make pro8
+make pro16
+make pro20
+make diecimila
+make ng
+make arduinobt168
+make atmega328
+make atmega328_pro8
+make sanguino
+make mega
+make atmega8
+make atmega88
+make luminet
+make bluec88_115200
+make bluec328_19200
+make bluec328_115200

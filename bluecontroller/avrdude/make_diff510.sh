@@ -1,0 +1,2 @@
+#!/bin/sh
+diff -x 'lexer.c' -x '*.a' -x 'config_gram.h' -x 'config_gram.c' -x 'config.log' -x 'config.status' -x '*.tmp' -x 'avrdude.conf' -x '*.o' -x avrdude -x ac_cfg.h -x .DS_Store -x Makefile -x autom4te.cache -x '*.Po' -x '*.swp' -x .vimrc -x '*.ods' -x 'testburn*.sh' -x '*.hex' -x Makefile.in -x 'Makefile.new*' -x '*RFComm*' -x '*RingBuffer*' -x '*.m' -x '*~' -x ac_cfg.h.in -x aclocal.m4 -x avrdude.spec -x configure -x avrdude.info -x version.texi -x stamp-* -Naur avrdude-5.10.upstream/ avrdude-5.10.bt

@@ -1,0 +1,8 @@
+#!/bin/sh
+#echo ../../../tools/avr/bin/make OS=macosx ENV=arduino $*
+#../../../tools/avr/bin/make OS=macosx ENV=arduino $*
+ARDUINOPATH=/Applications/Arduino.app
+export TOOLROOT=$ARDUINOPATH/Contents/Resources/Java/hardware/tools
+echo $TOOLROOT/avr/bin/make OS=macosx ENV=arduino $*
+$TOOLROOT/avr/bin/make OS=macosx ENV=arduino $*
+

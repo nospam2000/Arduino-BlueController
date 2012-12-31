@@ -1,0 +1,6 @@
+# See: http://code.google.com/p/arduino/wiki/Platforms
+
+bluecisp.name=BlueController as ISP
+bluecisp.communication=serial
+bluecisp.protocol=bluec
+bluecisp.speed=19200
