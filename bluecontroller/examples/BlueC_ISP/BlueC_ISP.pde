@@ -41,7 +41,9 @@ uint8_t g_verifyBuf[256]; // only used for verify
 #include "BulkMode.h"
 
 void setup() {
-  SerialOpt.begin(115200);
+  // ARDUINO_SERIAL_BAUDRATE is either defined in .../hardware/<boardname>/variants/<variant>/pins_arduino.h
+  // or you have to set it manually here when your board has no fixed baud rate
+  SerialOpt.begin(ARDUINO_SERIAL_BAUDRATE);
   // according to errata 1280 the first character afer initializing the serial port should be ignored
   delay(10);
   SerialOpt.flush(); // make sure the receive buffer is empty
@@ -97,7 +99,7 @@ inline void prog_lamp(int state) {
 }
 
 
-inline void spi_init() {
+inline void spi_init(uint8_t sckDuration) {
   /* // avoid floating point calculations and additional lookup table by directly using precalculated values
   uint16_t divisor = (g_deviceParam.sckDuration * 8.0 / STK500_XTAL) / (1.0/F_CPU);
   if(divisor < 8)
@@ -108,30 +110,30 @@ inline void spi_init() {
 
   // calculate SCK divisor bits SPR0, SPR1 and SPI2X
   uint8_t spr;
-  if(g_deviceParam.sckDuration >= (SCK_DUR_OSC_64 + 1)) // divisor >= 69
+  if(sckDuration >= (SCK_DUR_OSC_64 + 1)) // divisor >= 69
   {
     spr = (1<<SPR1) | (1<<SPR0); // f_OSC / 128
-    g_deviceParam.sckDuration = SCK_DUR_OSC_128;
+    sckDuration = SCK_DUR_OSC_128;
   }
-  else if(g_deviceParam.sckDuration >= (SCK_DUR_OSC_32 + 1)) // divisor >= 43
+  else if(sckDuration >= (SCK_DUR_OSC_32 + 1)) // divisor >= 43
   {
     spr = (1<<SPI2X)<<2 | (1<<SPR1) | (1<<SPR0); // f_OSC / 64
-    g_deviceParam.sckDuration = SCK_DUR_OSC_64;
+    sckDuration = SCK_DUR_OSC_64;
   }
-  else if(g_deviceParam.sckDuration >= (SCK_DUR_OSC_16 + 1)) // divisor >= 26
+  else if(sckDuration >= (SCK_DUR_OSC_16 + 1)) // divisor >= 26
   {
     spr = (1<<SPI2X)<<2 | (1<<SPR1); // f_OSC / 32
-    g_deviceParam.sckDuration = SCK_DUR_OSC_32;
+    sckDuration = SCK_DUR_OSC_32;
   }
-  else if(g_deviceParam.sckDuration >= (SCK_DUR_OSC_8 + 1)) // divisor > 8
+  else if(sckDuration >= (SCK_DUR_OSC_8 + 1)) // divisor > 8
   {
     spr = (1<<SPR0); // f_OSC / 16
-    g_deviceParam.sckDuration = SCK_DUR_OSC_16;
+    sckDuration = SCK_DUR_OSC_16;
   }
   else
   {
     spr = (1<<SPI2X)<<2 | (1<<SPR0); // smallest value: f_OSC / 8
-    g_deviceParam.sckDuration = SCK_DUR_OSC_8;
+    sckDuration = SCK_DUR_OSC_8;
   }
 
   SPCR = (SPCR & ~((1<<SPR1) | (1<<SPR0))) | (spr & ((1<<SPR1) | (1<<SPR0))) | (1<<SPE) | (1<<MSTR);
@@ -183,7 +185,7 @@ void set_parameter(uint8_t c, uint8_t value) {
   if(c == Parm_STK_SCK_DURATION)
   {
     g_deviceParam.sckDuration = value;
-    spi_init();
+    spi_init(g_deviceParam.sckDuration);
     sync_reply_ok();
   }
   else if(c == Parm_STK_OSC_PSCALE)
@@ -262,7 +264,7 @@ inline void set_device_ext() {
 
 void start_pmode() {
   // the timeout in avrdude is 1s, so we don't have much time, especially when falling back to lower SCK clocks!
-  uint8_t sckDurOrig = g_deviceParam.sckDuration;
+  uint8_t sckDur = g_deviceParam.sckDuration;
   for(;;)
   {
     for(uint8_t initCount = 3; initCount > 0; --initCount)
@@ -282,7 +284,7 @@ void start_pmode() {
       digitalWrite(MISO, HIGH); // enable pull-up
       delay(30); // After pulling Reset low, wait at least 20 ms before issuing the first command.
     
-      spi_init();
+      spi_init(sckDur);
       spi_send(STK_OPCODE_PROG_ENABLE_1); 
       spi_send(STK_OPCODE_PROG_ENABLE_2);
       uint8_t loopBack = spi_send(0x00);
@@ -296,20 +298,19 @@ void start_pmode() {
       }
     }
     
-    if(g_deviceParam.sckDuration < SCK_DUR_OSC_128)
+    if(sckDur < SCK_DUR_OSC_128)
     {
       // automatically switch to slower SCK speed when communication fails
-      g_deviceParam.sckDuration <<= 1;
-      if(g_deviceParam.sckDuration == 8)
+      sckDur <<= 1;
+      if(sckDur == 8)
       {
         // otherwise we would skip one clock step
-        g_deviceParam.sckDuration = 5;
+        sckDur = 5;
       }
     }
     else
     {
       // no device found
-      g_deviceParam.sckDuration = sckDurOrig; // when connect fails, restore original SCK duration
       sync_reply(Resp_STK_NODEVICE);
       return;
     }

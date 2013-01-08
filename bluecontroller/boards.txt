@@ -9,7 +9,7 @@
 
 ##############################################################
 
-bluecontroller328_19200o.name=BlueController BCA8-BTM w/ ATmega328P
+bluecontroller328_19200o.name=BlueController BCA8-BTM w/ ATmega328P, 19200bps
 bluecontroller328_19200o.upload.protocol=arduino
 bluecontroller328_19200o.upload.maximum_size=32256
 bluecontroller328_19200o.upload.speed=19200
@@ -23,10 +23,8 @@ bluecontroller328_19200o.bootloader.path=optiboot
 bluecontroller328_19200o.bootloader.file=optiboot_bluec328_8MHz_19200bps.hex
 bluecontroller328_19200o.build.mcu=atmega328p
 bluecontroller328_19200o.build.f_cpu=8000000L
-bluecontroller328_19200o.build.variant=bluecontroller
+bluecontroller328_19200o.build.variant=bluec19200
 bluecontroller328_19200o.build.core=arduino:arduino
-# for Arduino < V1.0, use this line instead of the one above:
-#bluecontroller328_19200o.build.core=bluecontroller:bluecontroller
 
 ##############################################################
 # 115200 bps are not officially supported because of the following reasons:
@@ -38,27 +36,25 @@ bluecontroller328_19200o.build.core=arduino:arduino
 #    is needed which doesn't fit in a 512 byte bootloader.
 #  - the baudrate in this setting actually doesn't matter because it doesn't affect
 #    the bluetooth baudrate at all. The only real difference is the bootloader.
-#bluecontroller328_115200o.name=BlueController BCA8-BTM w/ ATmega328P, 115200bps
-#bluecontroller328_115200o.upload.protocol=arduino
-#bluecontroller328_115200o.upload.maximum_size=32256
-#bluecontroller328_115200o.upload.speed=115200
-#bluecontroller328_115200o.upload.disable_flushing=true
-#bluecontroller328_115200o.bootloader.low_fuses=0xe2
-#bluecontroller328_115200o.bootloader.high_fuses=0xd6
-#bluecontroller328_115200o.bootloader.extended_fuses=0x06
-#bluecontroller328_115200o.bootloader.unlock_bits=0x3F
-#bluecontroller328_115200o.bootloader.lock_bits=0x2F
-#bluecontroller328_115200o.bootloader.path=optiboot
-#bluecontroller328_115200o.bootloader.file=optiboot_bluec328_8MHz_115200bps.hex
-#bluecontroller328_115200o.build.mcu=atmega328p
-#bluecontroller328_115200o.build.f_cpu=8000000L
-#bluecontroller328_115200o.build.variant=bluecontroller
-#bluecontroller328_115200o.build.core=arduino:arduino
-## for Arduino < V1.0, use this line instead of the one above:
-##bluecontroller328_115200o.build.core=bluecontroller:bluecontroller
+bluecontroller328_115200o.name=BlueController BCA8-BTM w/ ATmega328P, 115200bps
+bluecontroller328_115200o.upload.protocol=arduino
+bluecontroller328_115200o.upload.maximum_size=32256
+bluecontroller328_115200o.upload.speed=115200
+bluecontroller328_115200o.upload.disable_flushing=true
+bluecontroller328_115200o.bootloader.low_fuses=0xe2
+bluecontroller328_115200o.bootloader.high_fuses=0xd6
+bluecontroller328_115200o.bootloader.extended_fuses=0x06
+bluecontroller328_115200o.bootloader.unlock_bits=0x3F
+bluecontroller328_115200o.bootloader.lock_bits=0x2F
+bluecontroller328_115200o.bootloader.path=optiboot
+bluecontroller328_115200o.bootloader.file=optiboot_bluec328_8MHz_115200bps.hex
+bluecontroller328_115200o.build.mcu=atmega328p
+bluecontroller328_115200o.build.f_cpu=8000000L
+bluecontroller328_115200o.build.variant=bluec115200
+bluecontroller328_115200o.build.core=arduino:arduino
 
 ##############################################################
-bluecontroller88_19200o.name=BlueController BCA8-BTM w/ ATmega88PA
+bluecontroller88_19200o.name=BlueController BCA8-BTM w/ ATmega88PA, 19200bps
 bluecontroller88_19200o.upload.protocol=arduino
 bluecontroller88_19200o.upload.maximum_size=7680
 bluecontroller88_19200o.upload.speed=19200
@@ -72,10 +68,8 @@ bluecontroller88_19200o.bootloader.path=optiboot
 bluecontroller88_19200o.bootloader.file=optiboot_bluec88_8MHz_19200bps.hex
 bluecontroller88_19200o.build.mcu=atmega88
 bluecontroller88_19200o.build.f_cpu=8000000L
-bluecontroller88_19200o.build.variant=bluecontroller
+bluecontroller88_19200o.build.variant=bluec19200
 bluecontroller88_19200o.build.core=arduino:arduino
-# for Arduino < V1.0, use this line instead of the one above:
-#bluecontroller88_19200o.build.core=bluecontroller:bluecontroller
 
 ##############################################################
 # 115200 bps are not officially supported because of the following reasons:
@@ -87,22 +81,20 @@ bluecontroller88_19200o.build.core=arduino:arduino
 #    is needed which doesn't fit in a 512 byte bootloader.
 #  - the baudrate in this setting actually doesn't matter because it doesn't affect
 #    the bluetooth baudrate at all. The only real difference is the bootloader.
-#bluecontroller88_115200o.name=BlueController BCA8-BTM w/ ATmega88PA, 115200bps
-#bluecontroller88_115200o.upload.protocol=arduino
-#bluecontroller88_115200o.upload.maximum_size=7680
-#bluecontroller88_115200o.upload.speed=115200
-#bluecontroller88_115200o.upload.disable_flushing=true
-#bluecontroller88_115200o.bootloader.low_fuses=0xe2
-#bluecontroller88_115200o.bootloader.high_fuses=0xd6
-#bluecontroller88_115200o.bootloader.extended_fuses=0x04
-#bluecontroller88_115200o.bootloader.unlock_bits=0x3F
-#bluecontroller88_115200o.bootloader.lock_bits=0x2F
-#bluecontroller88_115200o.bootloader.path=optiboot
-#bluecontroller88_115200o.bootloader.file=optiboot_bluec88_8MHz_115200bps.hex
-#bluecontroller88_115200o.build.mcu=atmega88
-#bluecontroller88_115200o.build.f_cpu=8000000L
-#bluecontroller88_115200o.build.variant=bluecontroller
-#bluecontroller88_115200o.build.core=arduino:arduino
-## for Arduino < V1.0, use this line instead of the one above:
-##bluecontroller88_115200o.build.core=bluecontroller:bluecontroller
+bluecontroller88_115200o.name=BlueController BCA8-BTM w/ ATmega88PA, 115200bps
+bluecontroller88_115200o.upload.protocol=arduino
+bluecontroller88_115200o.upload.maximum_size=7680
+bluecontroller88_115200o.upload.speed=115200
+bluecontroller88_115200o.upload.disable_flushing=true
+bluecontroller88_115200o.bootloader.low_fuses=0xe2
+bluecontroller88_115200o.bootloader.high_fuses=0xd6
+bluecontroller88_115200o.bootloader.extended_fuses=0x04
+bluecontroller88_115200o.bootloader.unlock_bits=0x3F
+bluecontroller88_115200o.bootloader.lock_bits=0x2F
+bluecontroller88_115200o.bootloader.path=optiboot
+bluecontroller88_115200o.bootloader.file=optiboot_bluec88_8MHz_115200bps.hex
+bluecontroller88_115200o.build.mcu=atmega88
+bluecontroller88_115200o.build.f_cpu=8000000L
+bluecontroller88_115200o.build.variant=bluec115200
+bluecontroller88_115200o.build.core=arduino:arduino
 

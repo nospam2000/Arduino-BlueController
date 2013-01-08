@@ -27,6 +27,7 @@
 
 #include <avr/pgmspace.h>
 
+#define ARDUINO_SERIAL_BAUDRATE     (19200)
 #define NUM_DIGITAL_PINS            22
 #define NUM_ANALOG_INPUTS           6
 #define analogInputToDigitalPin(p)  ((p < 6) ? (p) + 14 : -1)
