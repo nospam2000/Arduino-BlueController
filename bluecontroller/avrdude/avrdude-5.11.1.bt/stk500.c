@@ -49,6 +49,8 @@
 static int stk500_getparm(PROGRAMMER * pgm, unsigned parm, unsigned * value);
 static int stk500_setparm(PROGRAMMER * pgm, unsigned parm, unsigned value);
 static void stk500_print_parms1(PROGRAMMER * pgm, const char * p);
+static int stk500_is_page_empty(unsigned int address, int page_size, 
+    const unsigned char *buf);
 
 int stk500_send(PROGRAMMER * pgm, unsigned char * buf, size_t len)
 {
@@ -687,7 +689,7 @@ static void stk500_close(PROGRAMMER * pgm)
 }
 
 
-int stk500_loadaddr(PROGRAMMER * pgm, unsigned int addr)
+static int stk500_loadaddr(PROGRAMMER * pgm, unsigned int addr)
 {
   unsigned char buf[16];
   int tries;
@@ -868,10 +870,7 @@ int stk500_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
   return n_bytes;
 }
 
-
-
-
-int stk500_is_page_empty(unsigned int address, int page_size, 
+static int stk500_is_page_empty(unsigned int address, int page_size, 
                                 const unsigned char *buf)
 {
     int i;
