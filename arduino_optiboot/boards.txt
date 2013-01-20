@@ -1,0 +1,25 @@
+##############################################################
+
+atmega328.name=Arduino Duemilanove w/ ATmega328 Optiboot 115200bps
+
+atmega328.upload.protocol=arduino
+atmega328.upload.maximum_size= 32256
+#atmega328.upload.speed=57600
+atmega328.upload.speed=115200
+
+atmega328.bootloader.low_fuses=0xFF
+#atmega328.bootloader.high_fuses=0xDA
+atmega328.bootloader.high_fuses=0xD6
+atmega328.bootloader.extended_fuses=0x05
+#atmega328.bootloader.path=atmega
+#atmega328.bootloader.file=ATmegaBOOT_168_atmega328.hex
+atmega328.bootloader.path=arduino:optiboot
+atmega328.bootloader.file=optiboot_atmega328.hex
+atmega328.bootloader.unlock_bits=0x3F
+atmega328.bootloader.lock_bits=0x2F
+
+atmega328.build.mcu=atmega328p
+atmega328.build.f_cpu=16000000L
+atmega328.build.core=arduino:arduino
+#atmega328.build.variant=arduino:standard
+atmega328.build.variant=arduino_optiboot:standard_115200bps
