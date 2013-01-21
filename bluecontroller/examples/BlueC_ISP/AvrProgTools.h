@@ -28,6 +28,7 @@ inline uint8_t spi_transaction(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
 }
 
 inline uint8_t flash_read(uint8_t hilo, int addr) {
+  // TODO: when using addresses >64k, set_ext_addr() must be used
   return spi_transaction(hilo ? STK_OPCODE_READ_PROG_MEM_HI : STK_OPCODE_READ_PROG_MEM_LO,
     (addr >> 8) & 0xFF,
     addr & 0xFF,
@@ -169,10 +170,11 @@ inline void universal()
 // TODO: needs to be tested
 inline void set_ext_addr(uint32_t addr)
 {
-  spi_transaction(STK_OPCODE_LOAD_EXT_ADDR_BYTE, 0x00, (addr >> 16) & 0x00, 0x00);
+  spi_transaction(STK_OPCODE_LOAD_EXT_ADDR_BYTE, 0x00, (addr >> 16) & 0xff, 0x00);
 }
 
 inline void flashByte(uint8_t hilo, int addr, uint8_t data) {
+  // TODO: when using addresses >64k, set_ext_addr() must be used
   spi_transaction(hilo ? STK_OPCODE_LOAD_PROG_PAGE_HI : STK_OPCODE_LOAD_PROG_PAGE_LO, 
     (addr>>8) & 0xFF, // TODO: according to AVR doc8271.pdf, chapter 27.8.3 "Serial Programming Instruction set", table 27-19, this should be 0x00
     addr & 0xFF,
