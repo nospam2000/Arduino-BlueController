@@ -1,0 +1,6 @@
+# See: http://www.myavr.info
+
+myavr.name=myAVR
+myavr.communication=serial
+myavr.protocol=avr911
+myavr.speed=19200
