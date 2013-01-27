@@ -99,7 +99,9 @@ inline char flash_read_page(uint16_t length) {
 
 inline char eeprom_read_page(uint16_t length) {
   // here again we have a word address
-  uint16_t start = g_loadAddr * 2;
+  //uint16_t start = g_loadAddr * a_div;
+  uint16_t start = g_loadAddr; // TODO: clarify if eeprom address is always a byte address
+
   for (uint16_t x = 0; x < length; x++) {
     uint16_t addr = start + x;
     uint8_t ee = spi_transaction(STK_OPCODE_READ_EEPROM_MEM, (addr >> 8) & 0xFF, addr & 0xFF, 0xFF);

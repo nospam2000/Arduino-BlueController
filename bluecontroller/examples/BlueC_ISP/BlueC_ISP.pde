@@ -390,8 +390,9 @@ inline void write_flash(int length) {
 // TODO: is this constant correct for all devices?
 #define EECHUNK (32)
 inline uint8_t write_eeprom(int length) {
-  // g_loadAddr is a word address, get the byte address
-  int start = g_loadAddr * 2;
+  // g_loadAddr might be a word address, get the byte address
+  //int start = g_loadAddr * a_div;
+  int start = g_loadAddr; // TODO: clarify if eeprom address is always a byte address
   int remaining = length;
   if (length > g_deviceParam.eepromsize) {
     error++;
