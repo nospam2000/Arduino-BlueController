@@ -43,7 +43,7 @@
 #include "stk500.h"
 #include "serial.h"
 
-const unsigned short mtu = 126; // this is what I get for a RFComm commnection on Mac OSX 10.7 TODO: should be read from serial driver after connecting
+const unsigned short mtu = 126; // this is what I get for a RFComm connnection on Mac OSX 10.7 TODO: should be read from serial driver after connecting
 //const unsigned short minimumBlockSize = 64; // don't send smaller packets
 const unsigned long writeDataOverhead = 6; // the protocol overhead of STK_BULK_WRITE_DATA
 const unsigned long writeVrfyOverhead = 8; // the protocol overhead of BULK_WRITE_VRFY_ERR
@@ -56,7 +56,8 @@ static int bluec_paged_load(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
 }
 
 // 'dstLen' is the maximum length of the _payload_, for the complete allowed frame length you have to add the protocol overhead
-int bluec_stuff_sendbuf(unsigned char* dstBuf, unsigned short dstLen, unsigned char* srcBuf, unsigned short srcLen, unsigned short* dstUsed, unsigned short *srcUsed)
+int bluec_stuff_sendbuf(unsigned char* dstBuf, unsigned short dstLen, unsigned char* srcBuf,
+unsigned short srcLen, unsigned short* dstUsed, unsigned short *srcUsed)
 {
   unsigned short cursize = dstLen;
   if(cursize > srcLen)
@@ -80,7 +81,8 @@ int bluec_stuff_sendbuf(unsigned char* dstBuf, unsigned short dstLen, unsigned c
 }
 
 // compress the data before sending using a simple run-length-encoding
-int bluec_stuff_sendbuf_rle(unsigned char* dstBuf, unsigned short dstLen, unsigned char* srcBuf, unsigned short srcLen, unsigned short* dstUsed, unsigned short *srcUsed)
+int bluec_stuff_sendbuf_rle(unsigned char* dstBuf, unsigned short dstLen, unsigned char* srcBuf,
+unsigned short srcLen, unsigned short* dstUsed, unsigned short *srcUsed)
 {
   unsigned short crc = 0; // TODO: has to be calculated
   unsigned short i = 0;
@@ -407,6 +409,12 @@ static int bluec_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
   if (strcmp(m->desc, "flash") == 0)
   {
     int bulk_rc = bluec_bulk_write(pgm, p, m, page_size, n_bytes);
+    if(bulk_rc >= 0)
+      return bulk_rc;
+  }
+  else if (strcmp(m->desc, "eeprom") == 0)
+  {
+    int bulk_rc = bluec_bulk_write(pgm, p, m, 3*128, n_bytes);
     if(bulk_rc >= 0)
       return bulk_rc;
   }
