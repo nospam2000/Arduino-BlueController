@@ -65,13 +65,62 @@ inline uint8_t write_eeprom_chunk(int start, int length) {
   // this writes byte-by-byte,
   // page writing may be faster (4 bytes at a time)
 
+  // TODO: which delay time is correct?
+  // According to doc8271.pdf and doc2549.pdf t_WD_EEPROM is 3.6ms for ATmega328
+  //              doc2490.pdf                 t_WD_EEPROM is   9ms for ATmega64(L)
+  // TODO: better use polling
+  //Data Polling EEPROM
+  //When a new byte has been written and is being programmed into EEPROM, reading the address location being programmed will give the value 0xFF.
+  //At the time the device is ready for a new byte, the programmed value will read correctly. This is used to determine when the next byte can be
+  //written. This will not work for the value 0xFF, but the user should have the following in mind: As a chip erased device contains 0xFF in all
+  //locations, programming of addresses that are meant to contain 0xFF, can be skipped. This does not apply if the EEPROM is re-pro- grammed
+  //without chip erasing the device. In this case, data polling cannot be used for the value 0xFF, and the user will have to wait at least
+  //tWD_EEPROM before programming the next byte. See Table 128 for tWD_EEPROM value.
+  
+  /* maximum max_write_delay times extracted from avrdude 5.11 config files
+  max_write_delay = 20000;
+    ATtiny12: size=64
+    AT90s2333, AT90s2343 (also AT90s2323 and ATtiny22): size=128
+    AT90s4414, AT90s4434, AT90s4433: size = 256
+    AT90s8535 size=512
+  
+  max_write_delay = 50000
+    ATmega128RFA1: size=4096
+  */
+
+  uint16_t tWD_EEPROM = 20+1; // works for almost all devices
+#ifndef USE_POLLING_FOR_EEPROM_WRITE
+  if(g_deviceParam.eepromsize > 512)
+    tWD_EEPROM = 9+1; // will work for any devices, except ATmega128RFA1 (when avrdude data is correct)
+#endif
+
   if(waitAvailable(length))
   {
     prog_lamp(LOW);
     for (int x = 0; x < length; x++) {
       int addr = start + x;
-      spi_transaction(STK_OPCODE_WRITE_EEPROM_MEM, (addr>>8) & 0xFF, addr & 0xFF, SerialOpt.peek(x));
-      delay(45); // TODO: is this constant correct? According to doc8271.pdf and doc2549.pdf t_WD_EEPROM is 3.6ms for ATmega328
+      uint8_t eeVal = SerialOpt.peek(x);
+      spi_transaction(STK_OPCODE_WRITE_EEPROM_MEM, (addr>>8) & 0xFF, addr & 0xFF, eeVal);
+
+#ifdef USE_POLLING_FOR_EEPROM_WRITE
+      delay(tWD_EEPROM);
+#else
+      if(eeVal == 0xff)
+      {
+        delay(tWD_EEPROM);
+      }
+      else
+      {
+        uint32_t startTime = millis();
+        uint8_t eeReadback;
+        uint32_t diffTime;
+        do
+        {
+          eeReadback = spi_transaction(STK_OPCODE_READ_EEPROM_MEM, (addr >> 8) & 0xFF, addr & 0xFF, 0xFF);
+          diffTime = millis() - startTime;
+        } while ((eeReadback == eeVal) || (diffTime >= tWD_EEPROM));
+      }
+#endif
     }
     consumeInputBuffer(length);
     prog_lamp(HIGH); 
