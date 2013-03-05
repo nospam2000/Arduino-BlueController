@@ -356,10 +356,10 @@ inline uint16_t pageFromAddr(uint16_t addr) {
 }
 
 
-inline uint8_t write_flash_pages(int length) {
+inline uint8_t write_flash_pages(uint16_t length) {
   uint8_t rc = Resp_STK_OK;
-  int page = pageFromAddr(g_loadAddr);
-  for(int x = 0; x < length; ) {
+  uint16_t page = pageFromAddr(g_loadAddr);
+  for(uint16_t x = 0; x < length; ) {
     if (page != pageFromAddr(g_loadAddr)) {
       commit(page);
       page = pageFromAddr(g_loadAddr);
@@ -389,11 +389,11 @@ inline void write_flash(int length) {
 
 // TODO: is this constant correct for all devices?
 #define EECHUNK (32)
-inline uint8_t write_eeprom(int length) {
+inline uint8_t write_eeprom(uint16_t length) {
   // g_loadAddr might be a word address, get the byte address
   //int start = g_loadAddr * a_div;
-  int start = g_loadAddr; // TODO: clarify if eeprom address is always a byte address
-  int remaining = length;
+  uint16_t start = g_loadAddr; // TODO: clarify if eeprom address is always a byte address
+  uint16_t remaining = length;
   if (length > g_deviceParam.eepromsize) {
     error++;
     return Resp_STK_FAILED;

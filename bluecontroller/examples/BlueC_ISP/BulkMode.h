@@ -6,7 +6,7 @@
 inline bool verify_current_page(void)
 {
   bool rc = true;
-  for(int i = 0; i < g_verifyAddr; i++)
+  for(uint16_t i = 0; i < g_verifyAddr; i++)
   {
     uint8_t flashVal;
     if(a_div == 2)
@@ -25,7 +25,7 @@ inline bool verify_current_page(void)
       bufferedWrite(g_verifyAddr & 0xff);
       bufferedWrite((g_verifyAddr >> 8) & 0xff);
 
-      int j;
+      uint16_t j;
       for(j = 0; j < i; j++) // the part before the current index is identical to the buffer, so we don't have to read it again from flash
       {
         bufferedWrite(g_verifyBuf[j]);
@@ -57,7 +57,7 @@ inline bool progPageWithVerify(int pageAddr) {
   bool rc = true;
 
   bool progNeeded = false;
-  for(int i = 0; i < g_verifyAddr; i++)
+  for(uint16_t i = 0; i < g_verifyAddr; i++)
   {
     if(g_verifyBuf[i] != 0xff)
     {
@@ -68,7 +68,7 @@ inline bool progPageWithVerify(int pageAddr) {
   
   if(progNeeded)
   {
-    for(int i = 0; i < g_verifyAddr; i++)
+    for(uint16_t i = 0; i < g_verifyAddr; i++)
     {
       uint32_t progByteAddr = (pageAddr * a_div) + i;
       uint32_t localLoadAddr = (a_div == 2) ? (progByteAddr / 2) : progByteAddr;
@@ -87,25 +87,23 @@ inline bool progPageWithVerify(int pageAddr) {
   return rc;
 }
 
-inline bool ProgByteLocation(uint32_t progByteAddr, uint8_t val)
+inline void ProgByteLocation(uint32_t progByteAddr, uint8_t val)
 {
   bool rc = true;
   uint32_t localLoadAddr = (a_div == 2) ? (progByteAddr / 2) : progByteAddr;
-  int newPage = pageFromAddr(localLoadAddr);
+  uint16_t newPage = pageFromAddr(localLoadAddr);
   if (newPage != g_curPage)
   {
     // this has to be handled every time the page is changed and on the very end of programming   
     rc = progPageWithVerify(g_curPage);
+    /* TODO: the uint16_t datatype doesn't allow larger word addresses than 16 bit
     if((g_curPage >> 16) != (newPage >> 16))
     {
       set_ext_addr(newPage);
     }
+    */
     g_curPage = newPage;
   }
-
-  // account for byte/word addressing and if HIGH or LOW opcode for even/odd addresses have to be used
-  // TODO: handle byte addressing, that means do we have to use HIGH or LOW in case of byte addressing?
-  uint8_t hiLo = (a_div == 2) ? ((progByteAddr & 0x01) ? HIGH : LOW) : HIGH;
 
   //flashByte(hiLo, localLoadAddr, val); // TODO: for test only
   g_verifyBuf[g_verifyAddr++] = val;
@@ -183,7 +181,7 @@ inline void abortBulkMode(void)
 // block data is at the beginning of the serial receive buffer
 inline void ProcessReceivedBlock(uint16_t blockLen)
 {
-  for(int i = 0; i < blockLen; i++)
+  for(uint16_t i = 0; i < blockLen; i++)
   {
     uint8_t val = SerialOpt.peek(i);
     uint16_t repCnt = 1;
@@ -306,7 +304,7 @@ inline void processBulkModeCommand(uint8_t cmd)
     }
     else
     {
-      uint16_t crc = peekLe16(1 - 1); // offset -1 because cmdByte has already be consumed
+      //uint16_t crc = peekLe16(1 - 1); // offset -1 because cmdByte has already be consumed
       uint16_t blockLen = peekLe16(3 - 1);
       consumeInputBuffer(5 - 1);
       if(!waitAvailable(blockLen + 1) || (SerialOpt.peek(blockLen) != Sync_CRC_EOP)) // blockLen+1 for Sync_CRC_EOP
