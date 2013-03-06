@@ -61,7 +61,7 @@ inline void WaitForProgramMemPageFinished()
 }
 
 // write (length) bytes, (start) is a byte address
-inline uint8_t write_eeprom_chunk(int start, int length) {
+inline uint8_t write_eeprom_chunk(uint16_t start, uint16_t length) {
   // this writes byte-by-byte,
   // page writing may be faster (4 bytes at a time)
 
@@ -89,48 +89,40 @@ inline uint8_t write_eeprom_chunk(int start, int length) {
   */
 
   uint16_t tWD_EEPROM = 20+1; // works for almost all devices
-#ifndef USE_POLLING_FOR_EEPROM_WRITE
   if(g_deviceParam.eepromsize > 512)
-    tWD_EEPROM = 9+1; // will work for any devices, except ATmega128RFA1 (when avrdude data is correct)
-#endif
+    // will work for any devices with more than 512 byte flash, except ATmega128RFA1 (when avrdude.conf 5.11 data is correct)
+    tWD_EEPROM = 9+1;
 
-  if(waitAvailable(length))
+  prog_lamp(LOW);
+  for (uint16_t x = 0; x < length; x++)
   {
-    prog_lamp(LOW);
-    for (int x = 0; x < length; x++) {
-      int addr = start + x;
-      uint8_t eeVal = SerialOpt.peek(x);
-      spi_transaction(STK_OPCODE_WRITE_EEPROM_MEM, (addr>>8) & 0xFF, addr & 0xFF, eeVal);
-
-#ifdef USE_POLLING_FOR_EEPROM_WRITE
-      delay(tWD_EEPROM);
-#else
-      if(eeVal == 0xff)
-      {
-        delay(tWD_EEPROM);
-      }
-      else
-      {
-        uint32_t startTime = millis();
-        uint8_t eeReadback;
-        uint32_t diffTime;
-        do
-        {
-          eeReadback = spi_transaction(STK_OPCODE_READ_EEPROM_MEM, (addr >> 8) & 0xFF, addr & 0xFF, 0xFF);
-          diffTime = millis() - startTime;
-        } while ((eeReadback == eeVal) || (diffTime >= tWD_EEPROM));
-      }
-#endif
+    uint16_t addr = start + x;
+    if(!waitAvailable(1))
+    {
+      errorNoSync();
+      return Resp_STK_NOSYNC;
     }
-    consumeInputBuffer(length);
-    prog_lamp(HIGH); 
-    return Resp_STK_OK;
+    uint8_t eeVal = SerialOpt.read();    
+    spi_transaction(STK_OPCODE_WRITE_EEPROM_MEM, (addr>>8) & 0xFF, addr & 0xFF, eeVal);
+
+    if((!g_deviceParam.polling) || (eeVal == g_deviceParam.eeprom_readback_p1) || (eeVal == g_deviceParam.eeprom_readback_p2))
+    {
+      delay(tWD_EEPROM);
+    }
+    else
+    {
+      uint32_t startTime = millis();
+      uint8_t eeReadback;
+      uint32_t diffTime;
+      do
+      {
+        eeReadback = spi_transaction(STK_OPCODE_READ_EEPROM_MEM, (addr >> 8) & 0xFF, addr & 0xFF, 0xFF);
+        diffTime = millis() - startTime;
+      } while ((eeReadback != eeVal) && (diffTime <= tWD_EEPROM));
+    }
   }
-  else
-  {
-    errorNoSync();
-    return Resp_STK_NOSYNC;
-  }
+  prog_lamp(HIGH); 
+  return Resp_STK_OK;
 }
 
 

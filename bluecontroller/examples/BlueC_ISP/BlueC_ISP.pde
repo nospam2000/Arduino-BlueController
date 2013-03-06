@@ -219,8 +219,8 @@ inline void set_device() {
     //g_deviceParam.fusebytes = SerialOpt.peek(7); // number of fuse bytes
     //g_deviceParam.flashpollval1 = SerialOpt.peek(8);  // TODO: honor this parameter
     //g_deviceParam.flashpollval2 = SerialOpt.peek(9);  // same as flashpollval1, so no need to read it
-    //g_deviceParam.eeprom_readback_p1 = SerialOpt.peek(10);  // TODO: honor this parameter
-    //g_deviceParam.eeprom_readback_p2 = SerialOpt.peek(11);  // TODO: honor this parameter
+    g_deviceParam.eeprom_readback_p1 = SerialOpt.peek(10);
+    g_deviceParam.eeprom_readback_p2 = SerialOpt.peek(11);
     // following are 16 bits (big endian)
     g_deviceParam.pagesize = peekBe16(12);
     g_deviceParam.eepromsize = peekBe16(14);
@@ -387,23 +387,16 @@ inline void write_flash(int length) {
   }
 }
 
-// TODO: is this constant correct for all devices?
-#define EECHUNK (32)
 inline uint8_t write_eeprom(uint16_t length) {
   // g_loadAddr might be a word address, get the byte address
-  //int start = g_loadAddr * a_div;
-  uint16_t start = g_loadAddr; // TODO: clarify if eeprom address is always a byte address
-  uint16_t remaining = length;
-  if (length > g_deviceParam.eepromsize) {
+  uint16_t start = g_loadAddr * a_div;
+  //uint16_t start = g_loadAddr;
+  // TODO: avrdude uses a word address when the device supports either the AVR_OP_LOADPAGE_LO or the AVR_OP_READ_LO instruction  
+  if ((start+length) > g_deviceParam.eepromsize) {
     error++;
     return Resp_STK_FAILED;
   }
-  while (remaining > EECHUNK) {
-    write_eeprom_chunk(start, EECHUNK);
-    start += EECHUNK;
-    remaining -= EECHUNK;
-  }
-  write_eeprom_chunk(start, remaining);
+  write_eeprom_chunk(start, length);
   return Resp_STK_OK;
 }
 

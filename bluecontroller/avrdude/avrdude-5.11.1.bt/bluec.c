@@ -408,18 +408,30 @@ static int bluec_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
 {
   if (strcmp(m->desc, "flash") == 0)
   {
-    int bulk_rc = bluec_bulk_write(pgm, p, m, page_size, n_bytes);
-    if(bulk_rc >= 0)
-      return bulk_rc;
+    return bluec_bulk_write(pgm, p, m, page_size, n_bytes);
   }
   else if (strcmp(m->desc, "eeprom") == 0)
   {
-    int bulk_rc = bluec_bulk_write(pgm, p, m, 3*128, n_bytes);
-    if(bulk_rc >= 0)
-      return bulk_rc;
+    // This is a workaround because stk500v1 assumes word addressing only when either the
+    // AVR_OP_LOADPAGE_LO or the AVR_OP_READ_LO instruction is supported. Force it here to
+    // always use a word address (a_div=2).
+    OPCODE* pOrigOp = m->op[AVR_OP_READ_LO];
+    OPCODE dummyOp;
+    int i;
+    for(i = 0; i < (sizeof(dummyOp.bit) / sizeof(dummyOp.bit[0])); i++)
+    {
+      dummyOp.bit[i].type = AVR_CMDBIT_IGNORE;
+      dummyOp.bit[i].bitno = 0;
+      dummyOp.bit[i].value = 0;
+    }
+    if (!(m->op[AVR_OP_READ_LO]))
+      m->op[AVR_OP_READ_LO] = &dummyOp; // use dummy op during call
+    int rc = stk500_paged_write(pgm, p, m, 3*128, n_bytes);
+    m->op[AVR_OP_READ_LO] = pOrigOp; // restore original op
+    return rc;
   }
 
-  // when bulk write failed or memtype!='flash' fall back to paged_write
+  // other mem types use the standard stk500v1 functions and parameters
   return stk500_paged_write(pgm, p, m, page_size, n_bytes);
 }
 

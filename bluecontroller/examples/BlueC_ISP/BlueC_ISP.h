@@ -100,7 +100,7 @@
 //#define STK_OPCODE_READ_CALIB_BYTE       0x38
 #define STK_OPCODE_WRITE_PROG_MEM_PAGE   0x4C
 #define STK_OPCODE_WRITE_EEPROM_MEM      0xC0
-#define STK_OPCODE_WRITE_EEPROM_MEM_PAGE 0xC2
+//#define STK_OPCODE_WRITE_EEPROM_MEM_PAGE 0xC2
 
 // avrdude uses the 'universal' command for these STK commands
 //#define STK_OPCODE_WRITE_LOCKBITS_1      0xAC
@@ -128,8 +128,8 @@ typedef struct DeviceParameters_struct {
   //uint8_t fusebytes;
   //uint8_t flashpollval1;
   //uint8_t flashpollval2;
-  //uint8_t eeprom_readback_p1;
-  //uint8_t eeprom_readback_p2;
+  uint8_t eeprom_readback_p1;
+  uint8_t eeprom_readback_p2;
   uint16_t pagesize;
   uint16_t eepromsize;
   uint32_t flashsize;
