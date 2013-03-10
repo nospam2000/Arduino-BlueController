@@ -102,23 +102,27 @@ inline uint8_t write_eeprom_chunk(flashAddr16 start, uint16_t length) {
       errorNoSync();
       return Resp_STK_NOSYNC;
     }
-    uint8_t eeVal = SerialOpt.read();    
-    spi_transaction(STK_OPCODE_WRITE_EEPROM_MEM, (addr>>8) & 0xFF, addr & 0xFF, eeVal);
+    uint8_t eeVal = getchT();
+    uint8_t eeReadback = spi_transaction(STK_OPCODE_READ_EEPROM_MEM, (addr >> 8) & 0xFF, addr & 0xFF, 0xFF);
+    if(eeReadback != eeVal) // skip programming when value is already correct
+    {
+      spi_transaction(STK_OPCODE_WRITE_EEPROM_MEM, (addr>>8) & 0xFF, addr & 0xFF, eeVal);
 
-    if((!g_deviceParam.polling) || (eeVal == g_deviceParam.eeprom_readback_p1) || (eeVal == g_deviceParam.eeprom_readback_p2))
-    {
-      delay(tWD_EEPROM);
-    }
-    else
-    {
-      uint32_t startTime = millis();
-      uint8_t eeReadback;
-      uint32_t diffTime;
-      do
+      //if((!g_deviceParam.polling) || (eeVal == g_deviceParam.eeprom_readback_p1) || (eeVal == g_deviceParam.eeprom_readback_p2))
+      if((!g_deviceParam.polling) || (eeVal == 0xff)) // the values from avrdude.conf don't seem to be reliable, so always use 0xff instead
       {
-        eeReadback = spi_transaction(STK_OPCODE_READ_EEPROM_MEM, (addr >> 8) & 0xFF, addr & 0xFF, 0xFF);
-        diffTime = millis() - startTime;
-      } while ((eeReadback != eeVal) && (diffTime <= tWD_EEPROM));
+        delay(tWD_EEPROM);
+      }
+      else
+      {
+        uint32_t startTime = millis();
+        uint32_t diffTime;
+        do
+        {
+          eeReadback = spi_transaction(STK_OPCODE_READ_EEPROM_MEM, (addr >> 8) & 0xFF, addr & 0xFF, 0xFF);
+          diffTime = millis() - startTime;
+        } while ((eeReadback != eeVal) && (diffTime <= tWD_EEPROM));
+      }
     }
   }
   prog_lamp(HIGH); 

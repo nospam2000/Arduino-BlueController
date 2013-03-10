@@ -132,8 +132,8 @@ typedef struct DeviceParameters_struct {
   //uint8_t fusebytes;
   //uint8_t flashpollval1;
   //uint8_t flashpollval2;
-  uint8_t eeprom_readback_p1;
-  uint8_t eeprom_readback_p2;
+  //uint8_t eeprom_readback_p1;
+  //uint8_t eeprom_readback_p2;
   uint16_t pagesize;
   uint16_t eepromsize;
   uint32_t flashsize;

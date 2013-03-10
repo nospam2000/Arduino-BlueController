@@ -220,8 +220,8 @@ inline void set_device() {
     //g_deviceParam.fusebytes = SerialOpt.peek(7); // number of fuse bytes
     //g_deviceParam.flashpollval1 = SerialOpt.peek(8);  // TODO: honor this parameter
     //g_deviceParam.flashpollval2 = SerialOpt.peek(9);  // same as flashpollval1, so no need to read it
-    g_deviceParam.eeprom_readback_p1 = SerialOpt.peek(10);
-    g_deviceParam.eeprom_readback_p2 = SerialOpt.peek(11);
+    //g_deviceParam.eeprom_readback_p1 = SerialOpt.peek(10);
+    //g_deviceParam.eeprom_readback_p2 = SerialOpt.peek(11);
     // following are 16 bits (big endian)
     g_deviceParam.pagesize = peekBe16(12);
     g_deviceParam.eepromsize = peekBe16(14);
