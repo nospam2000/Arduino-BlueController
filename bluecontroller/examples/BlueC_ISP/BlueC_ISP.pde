@@ -8,14 +8,15 @@
 
 // TODO: does the hardware work with 5V targets? How does the power have to be supplied => docu
 
-int error = 0;
-int pmode = 0;
+bool g_error = false;
+bool pmode = false;
 
-uint16_t g_curPage = 0; // base address of the current page (as word address)
-uint16_t g_loadAddr = 0; // address for reading and writing, set by 'U' command (as word address)
-uint16_t g_verifyAddr = 0;
+flashAddrExt8 g_extendedAddr = 0;
+flashAddr16 g_curPage = 0; // base address of the current page (as word address)
+flashAddr16 g_loadAddr = 0; // address for reading and writing, set by 'U' command (as word address or byte address, depending on a_div)
+flashAddr16 g_verifyAddr = 0;
 
-uint32_t g_byteAddr = 0;
+flashAddr32 g_byteAddr = 0;
 uint32_t g_readPos = 0; // counting of the read protocol bytes, starts after reading BULK_WRITE_START_ACK
 uint32_t g_ackPos = 0; // counting of the acknowledged protocol bytes, starts after reading BULK_WRITE_START_ACK
 uint32_t g_prevCmdTime = 0; // the time when the previous command has been processed
@@ -24,7 +25,7 @@ uint32_t g_prevAckTime = 0;
 
 DeviceParameters g_deviceParam;
 
-const uint32_t timeOut = 5*1000; // milliseconds
+const uint16_t timeOut = 20*1000; // milliseconds
 const uint16_t mtu = 126; // this is what I get for a RFComm commnection on Mac OSX 10.7 TODO: should be read from serial driver after connecting
 const uint16_t windowSize = RX_BUFFER_SIZE - 1; // the capacity of the ring buffer is one byte less than its size
 const uint8_t supportedOptions = Optn_STK_BULK_WRITE_VERIFY | Optn_STK_BULK_WRITE_RLE;
@@ -238,7 +239,7 @@ inline void set_device() {
 
 inline void set_device_ext() {
 // the length is variable, in avrdude the length is limited to 16 including Cmnd_STK_SET_DEVICE_EXT and Sync_CRC_EOP
-// refer to stk500.c:stk500_initialize() how to use the parsameters
+// refer to stk500.c:stk500_initialize() how to use the parameters
 // according to avrdude 5.10 sources: prommer firmware > 1.10 has 4 parameters, versions <=1.10 have 3 parameters
 
 // meaning of the data in the format <offset>: <description>
@@ -332,9 +333,8 @@ void end_pmode()
   pmode = 0;
 }
 
-inline bool commit(int addr)
+inline void commit(int addr)
 {
-  bool rc = true;
   if (PROG_FLICKER)
     prog_lamp(LOW);
 
@@ -344,21 +344,19 @@ inline bool commit(int addr)
       
   if (PROG_FLICKER)
     prog_lamp(HIGH);
-
-  return rc;
 }
 
 
 
 // returns the base address of the loadAddr; works only with page sizes with a power of two
-inline uint16_t pageFromAddr(uint16_t addr) {
+inline flashAddr16 pageFromAddr(flashAddr16 addr) {
   return (addr & ~((g_deviceParam.pagesize / a_div) - 1));
 }
 
 
 inline uint8_t write_flash_pages(uint16_t length) {
   uint8_t rc = Resp_STK_OK;
-  uint16_t page = pageFromAddr(g_loadAddr);
+  flashAddr16 page = pageFromAddr(g_loadAddr);
   for(uint16_t x = 0; x < length; ) {
     if (page != pageFromAddr(g_loadAddr)) {
       commit(page);
@@ -389,11 +387,11 @@ inline void write_flash(int length) {
 
 inline uint8_t write_eeprom(uint16_t length) {
   // g_loadAddr might be a word address, get the byte address
-  uint16_t start = g_loadAddr * a_div;
-  //uint16_t start = g_loadAddr;
-  // TODO: avrdude uses a word address when the device supports either the AVR_OP_LOADPAGE_LO or the AVR_OP_READ_LO instruction  
+  flashAddr16 start = g_loadAddr * a_div;
+  //flashAddr16 start = g_loadAddr;
+  // TODO WORD: avrdude uses a word address when the device supports either the AVR_OP_LOADPAGE_LO or the AVR_OP_READ_LO instruction  
   if ((start+length) > g_deviceParam.eepromsize) {
-    error++;
+    g_error = true;
     return Resp_STK_FAILED;
   }
   write_eeprom_chunk(start, length);
@@ -458,7 +456,7 @@ inline void processNormalModeCommand(uint8_t cmd)
   }
   else if(cmd == Cmnd_STK_GET_SYNC) // '0' 0x30 signon
   {
-    error = 0;
+    g_error = false;
     sync_reply_ok();
   }
   else if(cmd == Cmnd_STK_GET_PARAMETER) // 'A' 0x41
@@ -503,7 +501,7 @@ inline void processNormalModeCommand(uint8_t cmd)
   }
   else if(cmd == Cmnd_STK_LEAVE_PROGMODE) // 'Q' 0x51
   {
-    error = 0;
+    g_error = false;
     end_pmode();
     sync_reply_ok();
   }
@@ -515,8 +513,7 @@ inline void processNormalModeCommand(uint8_t cmd)
   {
     if(sync())
     {
-        SerialOpt.print("BlueC P");
-        //SerialOpt.print("AVR ISP"); // TODO: consumes RAM, should be replaced by PROGMEM
+        SerialOpt.print(F("BlueC P")); // originally "AVR ISP"
         SerialOpt.write(Resp_STK_OK);
     }
   }
@@ -558,7 +555,7 @@ inline void processNormalModeCommand(uint8_t cmd)
   {
     if (Sync_CRC_EOP == getchT())
     {
-      error++;
+      g_error = true;
       SerialOpt.write(Resp_STK_UNKNOWN);
     }
     else
@@ -571,7 +568,7 @@ inline void processNormalModeCommand(uint8_t cmd)
 
 inline void processCmds(void)
 { 
-  int cmd = SerialOpt.read();
+  int cmd = getchT();
 
   if(cmd >= 0)
   {
@@ -585,6 +582,7 @@ inline void processCmds(void)
     }
     g_prevCmdTime = millis();
   }
+#if 0
   else
   {
     uint32_t diffTime = millis() - g_prevCmdTime;
@@ -597,6 +595,7 @@ inline void processCmds(void)
       }
     }
   }
+#endif
 }
 
 void loop(void) {

@@ -27,7 +27,7 @@ inline uint8_t spi_transaction(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
   return spi_send(d);
 }
 
-inline uint8_t flash_read(uint8_t hilo, int addr) {
+inline uint8_t flash_read(uint8_t hilo, flashAddr16 addr) {
   // TODO: when using addresses >64k, set_ext_addr() must be used
   return spi_transaction(hilo ? STK_OPCODE_READ_PROG_MEM_HI : STK_OPCODE_READ_PROG_MEM_LO,
     (addr >> 8) & 0xFF,
@@ -45,7 +45,7 @@ inline void WaitForProgramMemPageFinished()
   uint32_t start = millis();
   for(;;)
   {
-    if((millis() - start) >= max_write_delay) // wait t_WD_FLASH delay time after programming
+    if((millis() - start) > max_write_delay) // wait t_WD_FLASH delay time after programming
       break; // timeout
 
     // TODO: some parts need a timed base wait instead of using the 0xFO instruction, but avrdude always sets g_deviceParam.polling to 1,
@@ -61,7 +61,7 @@ inline void WaitForProgramMemPageFinished()
 }
 
 // write (length) bytes, (start) is a byte address
-inline uint8_t write_eeprom_chunk(uint16_t start, uint16_t length) {
+inline uint8_t write_eeprom_chunk(flashAddr16 start, uint16_t length) {
   // this writes byte-by-byte,
   // page writing may be faster (4 bytes at a time)
 
@@ -96,7 +96,7 @@ inline uint8_t write_eeprom_chunk(uint16_t start, uint16_t length) {
   prog_lamp(LOW);
   for (uint16_t x = 0; x < length; x++)
   {
-    uint16_t addr = start + x;
+    flashAddr16 addr = start + x;
     if(!waitAvailable(1))
     {
       errorNoSync();
@@ -140,11 +140,11 @@ inline char flash_read_page(uint16_t length) {
 
 inline char eeprom_read_page(uint16_t length) {
   // here again we have a word address
-  //uint16_t start = g_loadAddr * a_div;
-  uint16_t start = g_loadAddr; // TODO: clarify if eeprom address is always a byte address
+  flashAddr16 start = g_loadAddr * a_div;
+  //uint16_t start = g_loadAddr; // TODO: clarify if eeprom address is always a byte address
 
   for (uint16_t x = 0; x < length; x++) {
-    uint16_t addr = start + x;
+    flashAddr16 addr = start + x;
     uint8_t ee = spi_transaction(STK_OPCODE_READ_EEPROM_MEM, (addr >> 8) & 0xFF, addr & 0xFF, 0xFF);
     bufferedWrite(ee);
   }
@@ -157,7 +157,7 @@ inline void read_page() {
 
   if(waitAvailable(4) && (SerialOpt.peek(3) == Sync_CRC_EOP))
   {
-    int length = peekBe16(0);
+    uint16_t length = peekBe16(0);
     char memtype = SerialOpt.peek(2);
     consumeInputBuffer(4);
     bufferedWrite(Resp_STK_INSYNC);
@@ -211,15 +211,15 @@ inline void universal()
 
 // needed for flash size > 64k words, e.g. ATmega2561, refer to doc2549.pdf
 // TODO: needs to be tested
-inline void set_ext_addr(uint32_t addr)
+inline void set_ext_addr(flashAddrExt8 addr)
 {
-  spi_transaction(STK_OPCODE_LOAD_EXT_ADDR_BYTE, 0x00, (addr >> 16) & 0xff, 0x00);
+  spi_transaction(STK_OPCODE_LOAD_EXT_ADDR_BYTE, 0x00, addr, 0x00);
 }
 
-inline void flashByte(uint8_t hilo, int addr, uint8_t data) {
+inline void flashByte(uint8_t hilo, flashAddr16 addr, uint8_t data) {
   // TODO: when using addresses >64k, set_ext_addr() must be used
   spi_transaction(hilo ? STK_OPCODE_LOAD_PROG_PAGE_HI : STK_OPCODE_LOAD_PROG_PAGE_LO, 
-    (addr>>8) & 0xFF, // TODO: according to AVR doc8271.pdf, chapter 27.8.3 "Serial Programming Instruction set", table 27-19, this should be 0x00
+    (addr>>8) & 0xFF,
     addr & 0xFF,
     data);
 }

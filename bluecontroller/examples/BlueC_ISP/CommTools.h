@@ -19,6 +19,7 @@ inline bool waitAvailable(int n) {
   }
 }
 
+// returns -1 on timeout
 inline int16_t getchT() {
   waitAvailable(1);
   int16_t c = SerialOpt.read();
@@ -60,7 +61,7 @@ inline void consumeInputBuffer(int n)
 
 void errorNoSync(void)
 {
-    error++;
+    g_error = true;
     delay(150); // there might be some packages in flight, give them time to arrive and then throw them away
     SerialOpt.flush();
     SerialOpt.write(Resp_STK_NOSYNC);
