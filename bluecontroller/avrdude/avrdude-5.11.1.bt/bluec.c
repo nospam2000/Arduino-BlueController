@@ -43,8 +43,12 @@
 #include "stk500.h"
 #include "serial.h"
 
-const unsigned short mtu = 126; // this is what I get for a RFComm connnection on Mac OSX 10.7 TODO: should be read from serial driver after connecting
-//const unsigned short minimumBlockSize = 64; // don't send smaller packets
+typedef long flashSize_t;
+typedef long flashOffset_t;
+typedef unsigned short blockSize_t;
+
+const blockSize_t mtu = 126; // this is what I get for a RFComm connnection on Mac OSX 10.7
+//const blockSize_t minimumBlockSize = 64; // don't send smaller packets
 const unsigned long writeDataOverhead = 6; // the protocol overhead of STK_BULK_WRITE_DATA
 const unsigned long writeVrfyOverhead = 8; // the protocol overhead of BULK_WRITE_VRFY_ERR
 
@@ -56,10 +60,10 @@ static int bluec_paged_load(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
 }
 
 // 'dstLen' is the maximum length of the _payload_, for the complete allowed frame length you have to add the protocol overhead
-int bluec_stuff_sendbuf(unsigned char* dstBuf, unsigned short dstLen, unsigned char* srcBuf,
-unsigned short srcLen, unsigned short* dstUsed, unsigned short *srcUsed)
+int bluec_stuff_sendbuf(unsigned char* dstBuf, flashSize_t dstLen, unsigned char* srcBuf,
+  flashSize_t srcLen, flashSize_t* dstUsed, flashSize_t *srcUsed)
 {
-  unsigned short cursize = dstLen;
+  flashSize_t cursize = dstLen;
   if(cursize > srcLen)
     cursize = srcLen;
   unsigned short crc = 0; // TODO: has to be calculated
@@ -81,18 +85,18 @@ unsigned short srcLen, unsigned short* dstUsed, unsigned short *srcUsed)
 }
 
 // compress the data before sending using a simple run-length-encoding
-int bluec_stuff_sendbuf_rle(unsigned char* dstBuf, unsigned short dstLen, unsigned char* srcBuf,
-unsigned short srcLen, unsigned short* dstUsed, unsigned short *srcUsed)
+int bluec_stuff_sendbuf_rle(unsigned char* dstBuf, flashSize_t dstLen, unsigned char* srcBuf,
+  flashSize_t srcLen, flashSize_t* dstUsed, flashSize_t *srcUsed)
 {
   unsigned short crc = 0; // TODO: has to be calculated
-  unsigned short i = 0;
+  flashSize_t i = 0;
   dstBuf[i++] = Cmnd_STK_BULK_WRITE_DATA;
   i += 2*2; // skip crc and payload length fields here, these will be filled below
 
   int srcRemain;
   int dstRemain;
-  long j;
-  unsigned short repCnt;
+  flashSize_t j;
+  flashSize_t repCnt;
   for(j = 0; ((srcRemain = srcLen - j) > 0) && ((dstRemain = dstLen - i) > 0); j += repCnt)
   {
     unsigned char val = srcBuf[j];
@@ -156,23 +160,15 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
                               int page_size, int n_bytes)
 {
   int rc = n_bytes; // return code, negative on failure
-	long orig_serial_recv_timeout = serial_recv_timeout;
+  long orig_serial_recv_timeout = serial_recv_timeout;
 
-  const unsigned long bufSize = 1024;
-  unsigned char buf[bufSize]; // for receiving a failed verify notification we need some reserve
-  int32_t i;
+  const blockSize_t bufSize = 2048; // for receiving a failed verify notification we need some reserve
+  unsigned char buf[bufSize];
+  flashSize_t i;
 
-  int a_div; // 1 means byte adressing, 2 means word addressing
-  if ((m->op[AVR_OP_LOADPAGE_LO]) || (m->op[AVR_OP_READ_LO]))
+  // the bulk mode currently only supports page mode programming
+  if (!(m->op[AVR_OP_LOADPAGE_LO]))
   {
-    a_div = 2;
-  }
-  else
-  {
-    // TODO: to make this work, the programmer code has to be adapted as well
-    // TODO: add support of byte addresses and the OP-codes AVR_OP_WRITE_LO and AVR_OP_LOADPAGE_LO. Upload
-    // the opcode table to the programmer
-    a_div = 1;
     return -1000;
   }
 
@@ -202,24 +198,27 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
   // TODO: could be solved by more acks for such large blocks
 	serial_recv_timeout = 15000;
   bulkOptions &= buf[1]; // maybe not all requested options could be enabled, so mask out the ones which aren't active
-  const unsigned short windowSize = buf[2] | buf[3] << 8;
-  unsigned long writePos = 0; // counting of the written protocol bytes, starts after reading BULK_WRITE_START_ACK
-  unsigned long ackPos = 0; // counting of the acknowledged protocol bytes, starts after reading BULK_WRITE_START_ACK
+  const blockSize_t windowSize = buf[2] | buf[3] << 8;
+  flashOffset_t writePos = 0; // counting of the written protocol bytes, starts after reading BULK_WRITE_START_ACK
+  flashOffset_t ackPos = 0; // counting of the acknowledged protocol bytes, starts after reading BULK_WRITE_START_ACK
 
-  unsigned short block_size = mtu - writeDataOverhead; // netto data of one block
+  blockSize_t block_size = mtu - writeDataOverhead; // netto data of one block
   if((block_size + writeDataOverhead) > bufSize)
     block_size = bufSize - writeDataOverhead;
   if(block_size > (windowSize - 2) / 2) // make sure at least two blocks can be traveling at the same time
     block_size = (windowSize - 2) / 2;
 
-  unsigned int byteAddr = 0;
+  flashOffset_t byteAddr = 0;
   for(;;)
   {
     report_progress (byteAddr, n_bytes, NULL);
 
-    int32_t remain;
-    int32_t availWindowSize;
+    flashSize_t remain;
+    flashSize_t availWindowSize;
     // TODO: handle the case when no whole block is available but no ACKs are arriving. Fallback to smaller blocks
+    if (verbose > 3)
+      fprintf(stderr, "\n%s: bluec_bulk_write() availWin=%ld, win=%u, writePos=%ld, ackPos=%ld, block_size=%u\r",
+        progname, windowSize - (writePos - ackPos), windowSize, writePos, ackPos, block_size);
     while((availWindowSize = (windowSize - (writePos - ackPos))) >= block_size)
     {
       // prog command
@@ -227,14 +226,14 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
       if(remain > 0)
       {
         i = 0;
-        unsigned short dstUsed;
-        unsigned short srcUsed;
+        flashSize_t dstUsed;
+        flashSize_t srcUsed;
         if(bulkOptions & Optn_STK_BULK_WRITE_RLE)
           bluec_stuff_sendbuf_rle(buf, block_size, &m->buf[byteAddr], remain, &dstUsed, &srcUsed);
         else
           bluec_stuff_sendbuf(buf, block_size, &m->buf[byteAddr], remain, &dstUsed, &srcUsed);
         i += dstUsed;
-        stk500_send(pgm, buf, i); // TODO: handle error
+        stk500_send(pgm, buf, i);
         writePos += i;
         byteAddr += srcUsed;
       }
@@ -281,7 +280,7 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
             rc = -9;
             goto bulkReceiveEnd;
           }
-          ackPos = buf[6] | (buf[7] << 8) | (buf[8] << 16) | (buf[8] << 24);
+          ackPos = buf[6] | (buf[7] << 8) | (buf[8] << 16) | (buf[9] << 24);
           unsigned long ackAddr = buf[2] | (buf[3] << 8) | (buf[4] << 16) | (buf[5] << 24);
           if(buf[1] == Stat_STK_BULK_ACKSTATE_NAK)
           {
@@ -294,7 +293,7 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
             buf[i++] = (byteAddr >> 16) & 0xff;
             buf[i++] = (byteAddr >> 24) & 0xff;
             buf[i++] = Sync_CRC_EOP;
-            stk500_send(pgm, buf, i); // TODO: handle error
+            stk500_send(pgm, buf, i);
             writePos += i;
             // TODO: limit number of retries
           }
@@ -314,7 +313,7 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
             goto bulkReceiveEnd;
           }
           unsigned long vrfyAddr = buf[1] | (buf[2] << 8) | (buf[3] << 16) | (buf[4] << 24);
-          unsigned short curSize = buf[5] | (buf[6] << 8);
+          blockSize_t curSize = buf[5] | (buf[6] << 8);
           if ((curSize + writeVrfyOverhead) > bufSize)
           {
             fprintf(stderr, "%s: bluec_bulk_write(): Overflow while reading data of VRFY_ERR\n", progname);
@@ -333,7 +332,6 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
             rc = -8;
             goto bulkReceiveEnd;
           }
-          // TODO: add detailed error message. We continue flashing but show the error.
           fprintf(stderr, "%s: bluec_bulk_write(): Verify error for page 0x%04lx, page size %u\n", progname, vrfyAddr, curSize);
           fprintf(stderr, "  addr:  read != orig\n");
           int vi;
@@ -344,6 +342,7 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
               fprintf(stderr, "0x%04lx:  0x%02x != 0x%02x\n", vrfyAddr + vi, buf[vi + writeVrfyOverhead - 1], m->buf[vrfyAddr + vi]);
             }
           }
+          // TODO: We continue flashing
           //rc = -3;
           break; // continue the loop
 
@@ -376,8 +375,10 @@ static int bluec_bulk_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
           {
             fprintf(stderr,
                   "%s: bluec_bulk_write(): BULK_WRITE_END failed, "
-                  "ACK.addr(0x%04x) != endAddr(0x%04x)\n", 
-                  progname, buf[2] | (buf[3] << 8) | (buf[4] << 16) | (buf[5] << 24), byteAddr - 1);
+                  "ACK.addr(0x%04lx) != endAddr(0x%04lx)\n", 
+                  progname,
+                  (flashOffset_t)buf[2] | ((flashOffset_t)buf[3] << 8) | ((flashOffset_t)buf[4] << 16) | ((flashOffset_t)buf[5] << 24),
+                  byteAddr - 1);
             rc = -103;
           }
           goto bulkReceiveEnd;
@@ -408,13 +409,18 @@ static int bluec_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
 {
   if (strcmp(m->desc, "flash") == 0)
   {
-    return bluec_bulk_write(pgm, p, m, page_size, n_bytes);
+    int rc = bluec_bulk_write(pgm, p, m, page_size, n_bytes);
+    if(rc >= 0)
+      return rc;
+    // when failed try it again with the standard stk500 function
   }
   else if (strcmp(m->desc, "eeprom") == 0)
   {
     // This is a workaround because stk500v1 assumes word addressing only when either the
     // AVR_OP_LOADPAGE_LO or the AVR_OP_READ_LO instruction is supported. Force it here to
     // always use a word address (a_div=2).
+    // TODO actually I think it is a bug in stk500v1 that stk500_paged_write() uses a_div=1 with the page write algorithm
+    // TODO stk500v1 should fall back to not use page write at all when the opcode is not supported
     OPCODE* pOrigOp = m->op[AVR_OP_READ_LO];
     OPCODE dummyOp;
     int i;
@@ -428,10 +434,12 @@ static int bluec_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
       m->op[AVR_OP_READ_LO] = &dummyOp; // use dummy op during call
     int rc = stk500_paged_write(pgm, p, m, 3*128, n_bytes);
     m->op[AVR_OP_READ_LO] = pOrigOp; // restore original op
-    return rc;
+    if(rc >= 0)
+      return rc;
+    // when failed try it again with the standard stk500 function
   }
 
-  // other mem types use the standard stk500v1 functions and parameters
+  // other mem types and when the bluec funtions fails use the standard stk500v1 functions and parameters
   return stk500_paged_write(pgm, p, m, page_size, n_bytes);
 }
 
