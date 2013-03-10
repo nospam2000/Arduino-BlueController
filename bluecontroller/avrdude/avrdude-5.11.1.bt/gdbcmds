@@ -1,8 +1,0 @@
-b bluec_stuff_sendbuf_rle
-b bluec_stuff_sendbuf
-b bluec_bulk_write
-b bluec.c:101
-b bluec.c:107
-b bluec.c:117
-b bluec.c:124
-b bluec.c:133

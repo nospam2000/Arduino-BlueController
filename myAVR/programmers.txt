@@ -1,0 +1,11 @@
+# See: http://www.myavr.info
+
+myavr1.name=myAVR (avr911)
+myavr1.communication=serial
+myavr1.protocol=avr911
+myavr1.speed=19200
+
+myavr2.name=myAVR (stk500v2)
+myavr2.communication=serial
+myavr2.protocol=stk500v2
+myavr2.speed=19200

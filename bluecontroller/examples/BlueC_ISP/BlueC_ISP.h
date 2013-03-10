@@ -74,7 +74,7 @@
 #define CMD_MODE_NORMAL     0x00
 #define CMD_MODE_BULK_WRITE 0x01
 
-#define WRITEBUF_SIZE 24 // max is 255 because of uint8_t writebufpos and uint8_tloopvar in flush_writebuf()
+#define WRITEBUF_SIZE 24 // max is 255 because of uint8_t writebufpos and uint8_t loopvar in flush_writebuf()
 
 // some instructions have more than one byte, therefore the _1 and _2 defines
 #define STK_OPCODE_PROG_ENABLE_1         0xAC
@@ -100,7 +100,7 @@
 //#define STK_OPCODE_READ_CALIB_BYTE       0x38
 #define STK_OPCODE_WRITE_PROG_MEM_PAGE   0x4C
 #define STK_OPCODE_WRITE_EEPROM_MEM      0xC0
-#define STK_OPCODE_WRITE_EEPROM_MEM_PAGE 0xC2
+//#define STK_OPCODE_WRITE_EEPROM_MEM_PAGE 0xC2
 
 // avrdude uses the 'universal' command for these STK commands
 //#define STK_OPCODE_WRITE_LOCKBITS_1      0xAC
@@ -117,6 +117,10 @@
 #define peekLe32(index) (SerialOpt.peek(index) + SerialOpt.peek(index+1) * 0x100 + SerialOpt.peek(index+2) * 0x10000 + SerialOpt.peek(index+3) * 0x1000000)
 #define peekBe32(index) (SerialOpt.peek(index) * 0x1000000 + SerialOpt.peek(index+1) * 0x10000 + SerialOpt.peek(index+2) * 0x100 + SerialOpt.peek(index+3))
 
+typedef uint16_t flashAddr16;
+typedef uint32_t flashAddr32;
+typedef uint8_t flashAddrExt8; // extended address bits 16 to 23
+
 typedef struct DeviceParameters_struct {
   //uint8_t devicecode;
   //uint8_t revision;
@@ -128,8 +132,8 @@ typedef struct DeviceParameters_struct {
   //uint8_t fusebytes;
   //uint8_t flashpollval1;
   //uint8_t flashpollval2;
-  //uint8_t eeprom_readback_p1;
-  //uint8_t eeprom_readback_p2;
+  uint8_t eeprom_readback_p1;
+  uint8_t eeprom_readback_p2;
   uint16_t pagesize;
   uint16_t eepromsize;
   uint32_t flashsize;

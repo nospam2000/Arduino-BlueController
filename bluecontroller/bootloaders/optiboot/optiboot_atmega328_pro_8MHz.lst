@@ -3,25 +3,25 @@ optiboot_atmega328_pro_8MHz.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         000001cc  00007e00  00007e00  00000054  2**1
+  0 .text         000001d0  00007e00  00007e00  00000054  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .debug_aranges 00000028  00000000  00000000  00000220  2**0
+  1 .debug_aranges 00000028  00000000  00000000  00000224  2**0
                   CONTENTS, READONLY, DEBUGGING
-  2 .debug_pubnames 0000005f  00000000  00000000  00000248  2**0
+  2 .debug_pubnames 0000005f  00000000  00000000  0000024c  2**0
                   CONTENTS, READONLY, DEBUGGING
-  3 .debug_info   0000026d  00000000  00000000  000002a7  2**0
+  3 .debug_info   0000026d  00000000  00000000  000002ab  2**0
                   CONTENTS, READONLY, DEBUGGING
-  4 .debug_abbrev 0000018e  00000000  00000000  00000514  2**0
+  4 .debug_abbrev 0000018e  00000000  00000000  00000518  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_line   00000433  00000000  00000000  000006a2  2**0
+  5 .debug_line   0000043b  00000000  00000000  000006a6  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_frame  00000080  00000000  00000000  00000ad8  2**2
+  6 .debug_frame  00000080  00000000  00000000  00000ae4  2**2
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_str    00000133  00000000  00000000  00000b58  2**0
+  7 .debug_str    00000133  00000000  00000000  00000b64  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_loc    00000241  00000000  00000000  00000c8b  2**0
+  8 .debug_loc    00000241  00000000  00000000  00000c97  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_ranges 00000060  00000000  00000000  00000ecc  2**0
+  9 .debug_ranges 00000060  00000000  00000000  00000ed8  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -51,13 +51,13 @@ int main(void) {
     if (!(ch & _BV(EXTRF)))
     7e06:	81 ff       	sbrs	r24, 1
       appStart();
-    7e08:	cc d0       	rcall	.+408    	; 0x7fa2 <appStart>
+    7e08:	ce d0       	rcall	.+412    	; 0x7fa6 <appStart>
 #endif
 
   // Set up watchdog to trigger after 1000 ms
   watchdogConfig(WATCHDOG_1S);
     7e0a:	8e e0       	ldi	r24, 0x0E	; 14
-    7e0c:	c4 d0       	rcall	.+392    	; 0x7f96 <watchdogConfig>
+    7e0c:	c6 d0       	rcall	.+396    	; 0x7f9a <watchdogConfig>
 
 #if (LED_START_FLASHES > 0) || defined(BLUECONTROLLER)
   // Set up Timer 1 for timeout counter
@@ -161,7 +161,7 @@ void watchdogReset() {
   for (;;) {
     /* get character from UART */
     ch = getch();
-    7e58:	96 d0       	rcall	.+300    	; 0x7f86 <getch>
+    7e58:	98 d0       	rcall	.+304    	; 0x7f8a <getch>
       verifySpace();
       blueCAvrdudeSynced = 1;
     }
@@ -173,7 +173,7 @@ void watchdogReset() {
       // GET PARAMETER returns a generic 0x03 reply - enough to keep Avrdude happy
       getNch(1);
     7e5e:	81 e0       	ldi	r24, 0x01	; 1
-    7e60:	ad d0       	rcall	.+346    	; 0x7fbc <getNch>
+    7e60:	af d0       	rcall	.+350    	; 0x7fc0 <getNch>
       putch(0x03);
     7e62:	83 e0       	ldi	r24, 0x03	; 3
     7e64:	1c c0       	rjmp	.+56     	; 0x7e9e <main+0x9e>
@@ -192,19 +192,19 @@ void watchdogReset() {
       // SET DEVICE EXT is ignored
       getNch(5);
     7e72:	85 e0       	ldi	r24, 0x05	; 5
-    7e74:	a3 d0       	rcall	.+326    	; 0x7fbc <getNch>
-    7e76:	7c c0       	rjmp	.+248    	; 0x7f70 <main+0x170>
+    7e74:	a5 d0       	rcall	.+330    	; 0x7fc0 <getNch>
+    7e76:	7e c0       	rjmp	.+252    	; 0x7f74 <main+0x174>
     }
     else if(ch == STK_LOAD_ADDRESS) {
     7e78:	85 35       	cpi	r24, 0x55	; 85
     7e7a:	61 f4       	brne	.+24     	; 0x7e94 <main+0x94>
       // LOAD ADDRESS
       address = getch();
-    7e7c:	84 d0       	rcall	.+264    	; 0x7f86 <getch>
+    7e7c:	86 d0       	rcall	.+268    	; 0x7f8a <getch>
       address = (address & 0xff) | (getch() << 8);
     7e7e:	08 2f       	mov	r16, r24
     7e80:	10 e0       	ldi	r17, 0x00	; 0
-    7e82:	81 d0       	rcall	.+258    	; 0x7f86 <getch>
+    7e82:	83 d0       	rcall	.+262    	; 0x7f8a <getch>
     7e84:	90 e0       	ldi	r25, 0x00	; 0
     7e86:	d8 2e       	mov	r13, r24
     7e88:	cc 24       	eor	r12, r12
@@ -217,7 +217,7 @@ void watchdogReset() {
       address += address; // Convert from word address to byte address
     7e8e:	cc 0c       	add	r12, r12
     7e90:	dd 1c       	adc	r13, r13
-    7e92:	6d c0       	rjmp	.+218    	; 0x7f6e <main+0x16e>
+    7e92:	6f c0       	rjmp	.+222    	; 0x7f72 <main+0x172>
       verifySpace();
     }
     else if(ch == STK_UNIVERSAL) {
@@ -226,11 +226,11 @@ void watchdogReset() {
       // UNIVERSAL command is ignored
       getNch(4);
     7e98:	84 e0       	ldi	r24, 0x04	; 4
-    7e9a:	90 d0       	rcall	.+288    	; 0x7fbc <getNch>
+    7e9a:	92 d0       	rcall	.+292    	; 0x7fc0 <getNch>
       putch(0x00);
     7e9c:	80 e0       	ldi	r24, 0x00	; 0
-    7e9e:	6b d0       	rcall	.+214    	; 0x7f76 <putch>
-    7ea0:	67 c0       	rjmp	.+206    	; 0x7f70 <main+0x170>
+    7e9e:	6d d0       	rcall	.+218    	; 0x7f7a <putch>
+    7ea0:	69 c0       	rjmp	.+210    	; 0x7f74 <main+0x174>
     }
     /* Write memory, length is big endian and is in bytes */
     else if(ch == STK_PROG_PAGE) {
@@ -242,12 +242,12 @@ void watchdogReset() {
       uint16_t addrPtr;
 
       getch();			/* getlen() */
-    7ea8:	6e d0       	rcall	.+220    	; 0x7f86 <getch>
+    7ea8:	70 d0       	rcall	.+224    	; 0x7f8a <getch>
       length = getch();
-    7eaa:	6d d0       	rcall	.+218    	; 0x7f86 <getch>
+    7eaa:	6f d0       	rcall	.+222    	; 0x7f8a <getch>
     7eac:	08 2f       	mov	r16, r24
       getch();
-    7eae:	6b d0       	rcall	.+214    	; 0x7f86 <getch>
+    7eae:	6d d0       	rcall	.+218    	; 0x7f8a <getch>
 
       // If we are in RWW section, immediately start page erase
 #if !defined(NRWWSECTIONFAVORSIZE) 
@@ -269,7 +269,7 @@ void watchdogReset() {
       // While that is going on, read in page contents
       bufPtr = buff;
       do *bufPtr++ = getch();
-    7ec6:	5f d0       	rcall	.+190    	; 0x7f86 <getch>
+    7ec6:	61 d0       	rcall	.+194    	; 0x7f8a <getch>
     7ec8:	89 93       	st	Y+, r24
       while (--length);
     7eca:	01 50       	subi	r16, 0x01	; 1
@@ -358,7 +358,7 @@ int main(void) {
       boot_rww_enable();
     7f1e:	a7 be       	out	0x37, r10	; 55
     7f20:	e8 95       	spm
-    7f22:	25 c0       	rjmp	.+74     	; 0x7f6e <main+0x16e>
+    7f22:	27 c0       	rjmp	.+78     	; 0x7f72 <main+0x172>
 
       // Read command terminator, start reply
       verifySpace();
@@ -370,15 +370,15 @@ int main(void) {
       // READ PAGE - we only read flash
 
       getch();			/* getlen */
-    7f28:	2e d0       	rcall	.+92     	; 0x7f86 <getch>
+    7f28:	30 d0       	rcall	.+96     	; 0x7f8a <getch>
       length = getch();
-    7f2a:	2d d0       	rcall	.+90     	; 0x7f86 <getch>
+    7f2a:	2f d0       	rcall	.+94     	; 0x7f8a <getch>
     7f2c:	e8 2e       	mov	r14, r24
       getch();
-    7f2e:	2b d0       	rcall	.+86     	; 0x7f86 <getch>
+    7f2e:	2d d0       	rcall	.+90     	; 0x7f8a <getch>
 
       verifySpace();
-    7f30:	3f d0       	rcall	.+126    	; 0x7fb0 <verifySpace>
+    7f30:	41 d0       	rcall	.+130    	; 0x7fb4 <verifySpace>
     7f32:	f6 01       	movw	r30, r12
     7f34:	fe 2c       	mov	r15, r14
         putch(result);
@@ -391,7 +391,7 @@ int main(void) {
     7f38:	0f 5f       	subi	r16, 0xFF	; 255
     7f3a:	1f 4f       	sbci	r17, 0xFF	; 255
     7f3c:	84 91       	lpm	r24, Z+
-    7f3e:	1b d0       	rcall	.+54     	; 0x7f76 <putch>
+    7f3e:	1d d0       	rcall	.+58     	; 0x7f7a <putch>
       while (--length);
     7f40:	fa 94       	dec	r15
     7f42:	f8 01       	movw	r30, r16
@@ -408,7 +408,7 @@ int main(void) {
     7f4c:	ea 94       	dec	r14
     7f4e:	ce 0c       	add	r12, r14
     7f50:	d1 1c       	adc	r13, r1
-    7f52:	0e c0       	rjmp	.+28     	; 0x7f70 <main+0x170>
+    7f52:	10 c0       	rjmp	.+32     	; 0x7f74 <main+0x174>
 #endif
 #endif
     }
@@ -419,160 +419,163 @@ int main(void) {
     7f56:	39 f4       	brne	.+14     	; 0x7f66 <main+0x166>
       // READ SIGN - return what Avrdude wants to hear
       verifySpace();
-    7f58:	2b d0       	rcall	.+86     	; 0x7fb0 <verifySpace>
+    7f58:	2d d0       	rcall	.+90     	; 0x7fb4 <verifySpace>
       putch(SIGNATURE_0);
     7f5a:	8e e1       	ldi	r24, 0x1E	; 30
-    7f5c:	0c d0       	rcall	.+24     	; 0x7f76 <putch>
+    7f5c:	0e d0       	rcall	.+28     	; 0x7f7a <putch>
       putch(SIGNATURE_1);
     7f5e:	85 e9       	ldi	r24, 0x95	; 149
-    7f60:	0a d0       	rcall	.+20     	; 0x7f76 <putch>
+    7f60:	0c d0       	rcall	.+24     	; 0x7f7a <putch>
       putch(SIGNATURE_2);
     7f62:	8f e0       	ldi	r24, 0x0F	; 15
     7f64:	9c cf       	rjmp	.-200    	; 0x7e9e <main+0x9e>
     }
     else if (ch == 'Q') {
     7f66:	81 35       	cpi	r24, 0x51	; 81
-    7f68:	11 f4       	brne	.+4      	; 0x7f6e <main+0x16e>
+    7f68:	21 f4       	brne	.+8      	; 0x7f72 <main+0x172>
       // Adaboot no-wait mod
-      watchdogConfig(WATCHDOG_64MS); // 16ms is not enough to send the result back to avrdude
-    7f6a:	8a e0       	ldi	r24, 0x0A	; 10
-    7f6c:	14 d0       	rcall	.+40     	; 0x7f96 <watchdogConfig>
-      verifySpace(); // fall through to the "else" clause, saves 4 bytes
+      verifySpace();
+    7f6a:	24 d0       	rcall	.+72     	; 0x7fb4 <verifySpace>
+      watchdogConfig(WATCHDOG_64MS); // 16ms was not enough to send the result back to avrdude
+    7f6c:	8a e0       	ldi	r24, 0x0A	; 10
+    7f6e:	15 d0       	rcall	.+42     	; 0x7f9a <watchdogConfig>
+    7f70:	ff cf       	rjmp	.-2      	; 0x7f70 <main+0x170>
+      for(;;) {} // endless loop, waiting for hardware reset
     }
     else {
       // This covers the response to commands like STK_ENTER_PROGMODE
       verifySpace();
-    7f6e:	20 d0       	rcall	.+64     	; 0x7fb0 <verifySpace>
+    7f72:	20 d0       	rcall	.+64     	; 0x7fb4 <verifySpace>
     }
     putch(STK_OK);
-    7f70:	80 e1       	ldi	r24, 0x10	; 16
-    7f72:	01 d0       	rcall	.+2      	; 0x7f76 <putch>
-    7f74:	71 cf       	rjmp	.-286    	; 0x7e58 <main+0x58>
+    7f74:	80 e1       	ldi	r24, 0x10	; 16
+    7f76:	01 d0       	rcall	.+2      	; 0x7f7a <putch>
+    7f78:	6f cf       	rjmp	.-290    	; 0x7e58 <main+0x58>
 
-00007f76 <putch>:
+00007f7a <putch>:
   }
 }
 
 void putch(char ch) {
-    7f76:	98 2f       	mov	r25, r24
+    7f7a:	98 2f       	mov	r25, r24
 #ifndef SOFT_UART
   while (!(UCSR0A & _BV(UDRE0)));
-    7f78:	80 91 c0 00 	lds	r24, 0x00C0
-    7f7c:	85 ff       	sbrs	r24, 5
-    7f7e:	fc cf       	rjmp	.-8      	; 0x7f78 <putch+0x2>
+    7f7c:	80 91 c0 00 	lds	r24, 0x00C0
+    7f80:	85 ff       	sbrs	r24, 5
+    7f82:	fc cf       	rjmp	.-8      	; 0x7f7c <putch+0x2>
   UDR0 = ch;
-    7f80:	90 93 c6 00 	sts	0x00C6, r25
+    7f84:	90 93 c6 00 	sts	0x00C6, r25
       [uartBit] "I" (UART_TX_BIT)
     :
       "r25"
   );
 #endif
 }
-    7f84:	08 95       	ret
+    7f88:	08 95       	ret
 
-00007f86 <getch>:
+00007f8a <getch>:
 }
 #endif
 
 // Watchdog functions. These are only safe with interrupts turned off.
 void watchdogReset() {
   __asm__ __volatile__ (
-    7f86:	a8 95       	wdr
+    7f8a:	a8 95       	wdr
       [uartBit] "I" (UART_RX_BIT)
     :
       "r25"
 );
 #else
   while(!(UCSR0A & _BV(RXC0)))
-    7f88:	80 91 c0 00 	lds	r24, 0x00C0
-    7f8c:	87 ff       	sbrs	r24, 7
-    7f8e:	fc cf       	rjmp	.-8      	; 0x7f88 <getch+0x2>
+    7f8c:	80 91 c0 00 	lds	r24, 0x00C0
+    7f90:	87 ff       	sbrs	r24, 7
+    7f92:	fc cf       	rjmp	.-8      	; 0x7f8c <getch+0x2>
 #if defined(BLUECONTROLLER) 
     extendWatchdogPeriodAfterStartup();
 #endif
   }
 
   ch = UDR0;
-    7f90:	80 91 c6 00 	lds	r24, 0x00C6
+    7f94:	80 91 c6 00 	lds	r24, 0x00C6
   LED_PIN |= _BV(LED);
 #endif
 #endif
 
   return ch;
 }
-    7f94:	08 95       	ret
+    7f98:	08 95       	ret
 
-00007f96 <watchdogConfig>:
+00007f9a <watchdogConfig>:
     "wdr\n"
   );
 }
 
 void watchdogConfig(uint8_t x) {
   WDTCSR = _BV(WDCE) | _BV(WDE);
-    7f96:	e0 e6       	ldi	r30, 0x60	; 96
-    7f98:	f0 e0       	ldi	r31, 0x00	; 0
-    7f9a:	98 e1       	ldi	r25, 0x18	; 24
-    7f9c:	90 83       	st	Z, r25
+    7f9a:	e0 e6       	ldi	r30, 0x60	; 96
+    7f9c:	f0 e0       	ldi	r31, 0x00	; 0
+    7f9e:	98 e1       	ldi	r25, 0x18	; 24
+    7fa0:	90 83       	st	Z, r25
   WDTCSR = x;
-    7f9e:	80 83       	st	Z, r24
+    7fa2:	80 83       	st	Z, r24
 }
-    7fa0:	08 95       	ret
+    7fa4:	08 95       	ret
 
-00007fa2 <appStart>:
+00007fa6 <appStart>:
   }
 }
 #endif
 
 void appStart() {
   LED_DDR |= _BV(LED); // switch LED to output
-    7fa2:	25 9a       	sbi	0x04, 5	; 4
+    7fa6:	25 9a       	sbi	0x04, 5	; 4
   LED_PORT &= ~_BV(LED); // switch LED off
-    7fa4:	2d 98       	cbi	0x05, 5	; 5
+    7fa8:	2d 98       	cbi	0x05, 5	; 5
   watchdogConfig(WATCHDOG_OFF);
-    7fa6:	80 e0       	ldi	r24, 0x00	; 0
-    7fa8:	f6 df       	rcall	.-20     	; 0x7f96 <watchdogConfig>
+    7faa:	80 e0       	ldi	r24, 0x00	; 0
+    7fac:	f6 df       	rcall	.-20     	; 0x7f9a <watchdogConfig>
   __asm__ __volatile__ (
-    7faa:	ee 27       	eor	r30, r30
-    7fac:	ff 27       	eor	r31, r31
-    7fae:	09 94       	ijmp
+    7fae:	ee 27       	eor	r30, r30
+    7fb0:	ff 27       	eor	r31, r31
+    7fb2:	09 94       	ijmp
 
-00007fb0 <verifySpace>:
+00007fb4 <verifySpace>:
   do getch(); while (--count);
   verifySpace();
 }
 
 void verifySpace() {
   if (getch() == CRC_EOP)
-    7fb0:	ea df       	rcall	.-44     	; 0x7f86 <getch>
-    7fb2:	80 32       	cpi	r24, 0x20	; 32
-    7fb4:	11 f4       	brne	.+4      	; 0x7fba <verifySpace+0xa>
+    7fb4:	ea df       	rcall	.-44     	; 0x7f8a <getch>
+    7fb6:	80 32       	cpi	r24, 0x20	; 32
+    7fb8:	11 f4       	brne	.+4      	; 0x7fbe <verifySpace+0xa>
   {
     putch(STK_INSYNC);
-    7fb6:	84 e1       	ldi	r24, 0x14	; 20
-    7fb8:	de cf       	rjmp	.-68     	; 0x7f76 <putch>
+    7fba:	84 e1       	ldi	r24, 0x14	; 20
+    7fbc:	de cf       	rjmp	.-68     	; 0x7f7a <putch>
 #if defined(BLUECONTROLLER) 
-    // ignore error when not synced, otherwise some initial garbage will exit the bootloader
+    // ignore error when not synced, otherwise some initial garbage (e.g. CONNECT message from BT module) will exit the bootloader
     if(blueCAvrdudeSynced)
       appStart();
 #else
     appStart();
-    7fba:	f3 cf       	rjmp	.-26     	; 0x7fa2 <appStart>
+    7fbe:	f3 cf       	rjmp	.-26     	; 0x7fa6 <appStart>
 
-00007fbc <getNch>:
+00007fc0 <getNch>:
     ::[count] "M" (UART_B_VALUE)
   );
 }
 #endif
 
 void getNch(uint8_t count) {
-    7fbc:	1f 93       	push	r17
-    7fbe:	18 2f       	mov	r17, r24
+    7fc0:	1f 93       	push	r17
+    7fc2:	18 2f       	mov	r17, r24
   do getch(); while (--count);
-    7fc0:	e2 df       	rcall	.-60     	; 0x7f86 <getch>
-    7fc2:	11 50       	subi	r17, 0x01	; 1
-    7fc4:	e9 f7       	brne	.-6      	; 0x7fc0 <getNch+0x4>
+    7fc4:	e2 df       	rcall	.-60     	; 0x7f8a <getch>
+    7fc6:	11 50       	subi	r17, 0x01	; 1
+    7fc8:	e9 f7       	brne	.-6      	; 0x7fc4 <getNch+0x4>
   verifySpace();
-    7fc6:	f4 df       	rcall	.-24     	; 0x7fb0 <verifySpace>
+    7fca:	f4 df       	rcall	.-24     	; 0x7fb4 <verifySpace>
 }
-    7fc8:	1f 91       	pop	r17
-    7fca:	08 95       	ret
+    7fcc:	1f 91       	pop	r17
+    7fce:	08 95       	ret

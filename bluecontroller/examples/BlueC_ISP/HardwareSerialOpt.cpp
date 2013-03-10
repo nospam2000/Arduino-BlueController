@@ -66,11 +66,11 @@
 
 // avoid 16-bit division for modulo and replace it by AND operation (only possible for power of two buffer sizes)
 #if(RX_BUFFER_SIZE == 0x10 || RX_BUFFER_SIZE == 0x20 || RX_BUFFER_SIZE == 0x40 || RX_BUFFER_SIZE == 0x80 || RX_BUFFER_SIZE == 0x100 || RX_BUFFER_SIZE == 0x200)
-#define MODULO_BUFSIZE(n) (n & (RX_BUFFER_SIZE - 1))
+#define MODULO_BUFSIZE(n) (((uint16_t)n) & ((uint16_t)(RX_BUFFER_SIZE - 1)))
 #else
 // TODO: doesn't work, don't know why...
 #error "use a power of two as buffer size..."
-#define MODULO_BUFSIZE(n) ((uint16_t)n % (uint16_t)RX_BUFFER_SIZE)
+#define MODULO_BUFSIZE(n) (((uint16_t)n) % (uint16_t)RX_BUFFER_SIZE)
 #endif
 
 inline void store_char(unsigned char c, ring_buffer *rx_buffer)

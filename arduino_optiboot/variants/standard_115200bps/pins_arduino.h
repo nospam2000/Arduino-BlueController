@@ -27,8 +27,8 @@
 
 #include <avr/pgmspace.h>
 
-#define ARDUINO_SERIAL_BAUDRATE     (19200)
-#define NUM_DIGITAL_PINS            22
+#define ARDUINO_SERIAL_BAUDRATE     (115200)
+#define NUM_DIGITAL_PINS            20
 #define NUM_ANALOG_INPUTS           6
 #define analogInputToDigitalPin(p)  ((p < 6) ? (p) + 14 : -1)
 
@@ -45,7 +45,7 @@ static const uint8_t SCK  = 13;
 
 static const uint8_t SDA = 18;
 static const uint8_t SCL = 19;
-static const uint8_t LED_BUILTIN = 20;
+static const uint8_t LED_BUILTIN = 13;
 
 static const uint8_t A0 = 14;
 static const uint8_t A1 = 15;
@@ -151,8 +151,6 @@ const uint8_t PROGMEM digital_pin_to_port_PGM[] = {
 	PC,
 	PC,
 	PC,
-	PB, /* 20: BlueController LED */
-	PB, /* 21: BlueController BTM-222 RESET */
 };
 
 const uint8_t PROGMEM digital_pin_to_bit_mask_PGM[] = {
@@ -176,8 +174,6 @@ const uint8_t PROGMEM digital_pin_to_bit_mask_PGM[] = {
 	_BV(3),
 	_BV(4),
 	_BV(5),
-	_BV(6), /* 20: BlueController LED */
-	_BV(7), /* 21: BlueController BTM-222 RESET */
 };
 
 const uint8_t PROGMEM digital_pin_to_timer_PGM[] = {
@@ -216,8 +212,6 @@ const uint8_t PROGMEM digital_pin_to_timer_PGM[] = {
 	NOT_ON_TIMER,
 	NOT_ON_TIMER,
 	NOT_ON_TIMER,
-	NOT_ON_TIMER, /* 20: BlueController LED */
-	NOT_ON_TIMER, /* 21: BlueController BTM-222 RESET */
 };
 
 #endif
