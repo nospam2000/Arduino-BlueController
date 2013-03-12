@@ -43,6 +43,7 @@ void setup()
   sendBtCmd("ATC1"); // enable flow control: without this, avrdude under Windows will hang
   sendBtCmd("ATR1"); // device is slave  
   sendBtCmd("ATN=BlueController"); // set new name
+  //sendBtCmd("ATN=ROBO TX-384"); // set new name
   sendBtCmd("ATP=1234"); // set PIN
   sendBtCmd("ATD0"); // accept connections from any bt device
   sendBtCmd("ATX0"); // disable escape character (default)
@@ -137,6 +138,8 @@ bool set_btbaudrate(uint32_t newbaudrate)
     Serial.begin(baudrates[new_baudrate_index]);
     result = true;
   }
+  
+  return result;
 }
 
 void bt_escape_sequence(void)
