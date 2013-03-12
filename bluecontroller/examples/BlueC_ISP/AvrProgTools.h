@@ -27,7 +27,7 @@ inline uint8_t spi_transaction(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
   return spi_send(d);
 }
 
-inline uint8_t flash_read(uint8_t hilo, flashAddr16 addr) {
+inline uint8_t flash_read(bool hilo, flashAddr16 addr) {
   // TODO: when using addresses >64k, set_ext_addr() must be used
   return spi_transaction(hilo ? STK_OPCODE_READ_PROG_MEM_HI : STK_OPCODE_READ_PROG_MEM_LO,
     (addr >> 8) & 0xFF,
@@ -39,8 +39,9 @@ inline uint8_t flash_read(uint8_t hilo, flashAddr16 addr) {
 // TODO: The max_write_delay value from the avrdude configfile should be used, but they are not supplied by avrdude as parameters.
 // According to AVR doc8271.pdf table 27-18 t_WD_FLASH has to be at least 4.5ms for ATmega328P, but
 // some other devices like ATtiny12 need times up to 20ms. An ATmega103 would even need 56ms according to the avrdude config file.
+// readBackValue must be !=0xff
 #define max_write_delay (20)
-inline void WaitForProgramMemPageFinished()
+inline void WaitForProgramMemPageFinished(flashAddr16 addrForReadback, uint8_t hiLoForReadback, uint8_t readBackValue)
 {
   uint32_t start = millis();
   for(;;)
@@ -52,10 +53,22 @@ inline void WaitForProgramMemPageFinished()
     // so there is actually no chance to do it right
     if(g_deviceParam.polling)
     {
-      // see documentation in doc8271, section below table Table 27-19 "Serial Programming Instruction Set (Hexadecimal values)"
-      uint8_t bsy = spi_transaction(STK_OPCODE_POLL_RDY_BSY, 0x00, 0x00, 0x00);
-      if(!(bsy & 0x01))
-        break;
+      if(false)
+      {
+        // see documentation in doc8271, section below table Table 27-19 "Serial Programming Instruction Set (Hexadecimal values)"
+        // not all devices support this opcode
+        uint8_t bsy = spi_transaction(STK_OPCODE_POLL_RDY_BSY, 0x00, 0x00, 0x00);
+        if(!(bsy & 0x01))
+          break;
+      }
+      else
+      {
+        // devices like the ATmega64 don't support the STK_OPCODE_POLL_RDY_BSY opcode, so we have to poll for a value in the page which is !=0xff
+        if(flash_read(hiLoForReadback, addrForReadback) == readBackValue)
+        {
+          break;
+        }
+      }
     }
   }
 }
@@ -220,7 +233,7 @@ inline void set_ext_addr(flashAddrExt8 addr)
   spi_transaction(STK_OPCODE_LOAD_EXT_ADDR_BYTE, 0x00, addr, 0x00);
 }
 
-inline void flashByte(uint8_t hilo, flashAddr16 addr, uint8_t data) {
+inline void flashByte(bool hilo, flashAddr16 addr, uint8_t data) {
   // TODO: when using addresses >64k, set_ext_addr() must be used
   spi_transaction(hilo ? STK_OPCODE_LOAD_PROG_PAGE_HI : STK_OPCODE_LOAD_PROG_PAGE_LO, 
     (addr>>8) & 0xFF,

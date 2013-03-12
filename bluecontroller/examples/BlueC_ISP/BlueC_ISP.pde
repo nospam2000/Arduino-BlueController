@@ -333,14 +333,14 @@ void end_pmode()
   pmode = 0;
 }
 
-inline void commit(int addr)
+inline void commit(flashAddr16 addr, flashAddr16 addrForReadback, bool hiLoForReadback, uint8_t readBackValue)
 {
   if (PROG_FLICKER)
     prog_lamp(LOW);
 
   // there is at least one byte different from 0xff and the current page is worth programming
   spi_transaction(STK_OPCODE_WRITE_PROG_MEM_PAGE, (addr >> 8) & 0xFF, addr & 0xFF, 0);
-  WaitForProgramMemPageFinished();
+  WaitForProgramMemPageFinished(addrForReadback, hiLoForReadback, readBackValue);
       
   if (PROG_FLICKER)
     prog_lamp(HIGH);
@@ -357,17 +357,31 @@ inline flashAddr16 pageFromAddr(flashAddr16 addr) {
 inline uint8_t write_flash_pages(uint16_t length) {
   uint8_t rc = Resp_STK_OK;
   flashAddr16 page = pageFromAddr(g_loadAddr);
-  for(uint16_t x = 0; x < length; ) {
-    if (page != pageFromAddr(g_loadAddr)) {
-      commit(page);
+  uint8_t readBackValue = 0xff;
+  flashAddr16 addrForReadback;
+  bool hiLoForReadback;
+  for(uint16_t x = 0; x < length; x++)
+  {
+    if (page != pageFromAddr(g_loadAddr))
+    {
+      commit(page, addrForReadback, hiLoForReadback, readBackValue);
       page = pageFromAddr(g_loadAddr);
+      readBackValue = 0xff;
     }
-    flashByte(LOW, g_loadAddr, SerialOpt.peek(x++));
-    flashByte(HIGH, g_loadAddr, SerialOpt.peek(x++));
-    g_loadAddr++;
+    bool hiLow = (x & 0x01);
+    uint8_t flashVal = SerialOpt.peek(x);
+    if(flashVal != 0xff)
+    {
+      readBackValue = flashVal;
+      addrForReadback = g_loadAddr;
+      hiLoForReadback = hiLow;
+    }
+    
+    flashByte(hiLow, g_loadAddr, flashVal);
+    g_loadAddr += hiLow; // only increment after high-byte is written
   }
 
-  commit(page);
+  commit(page, addrForReadback, hiLoForReadback, readBackValue);
 
   return rc;
 }

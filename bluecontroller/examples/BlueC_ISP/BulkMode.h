@@ -51,7 +51,8 @@ inline bool progPageWithVerify(flashAddr16 pageAddr) {
   bool rc = true;
 
   bool progNeeded = false;
-  for(uint16_t i = 0; i < g_verifyAddr; i++)
+  uint16_t i;
+  for(i = 0; i < g_verifyAddr; i++)
   {
     if(g_verifyBuf[i] != 0xff)
     {
@@ -68,13 +69,14 @@ inline bool progPageWithVerify(flashAddr16 pageAddr) {
     }
 
     // always fill the whole page and not only the bytes sent from the programmer
-    for(uint16_t i = 0; i < g_deviceParam.pagesize; i++)
+    for(uint16_t j = 0; j < g_deviceParam.pagesize; j++)
     {
-      uint8_t hiLo = (a_div == 2) ? ((i & 0x01) ? HIGH : LOW) : HIGH;
-      flashByte(hiLo, pageAddr + (i / a_div), (i < g_verifyAddr) ? g_verifyBuf[i] : 0xff);
+      bool hiLo = (a_div == 2) ? (j & 0x01) : true ;
+      flashByte(hiLo, pageAddr + (j / a_div), (j < g_verifyAddr) ? g_verifyBuf[j] : 0xff);
     }
 
-    commit(pageAddr);
+    // use the first value which is !=0xff to wait until the content of the page has been written
+    commit(pageAddr, pageAddr + i, i & 0x01, g_verifyBuf[i]);
 
     if((g_bulkOptions & Optn_STK_BULK_WRITE_VERIFY) && (g_verifyAddr > 0))
       rc = verify_current_page(); // only do this in bulk mode; outside bulk mode g_verifyAddr will be always 0
