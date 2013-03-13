@@ -9,34 +9,34 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
   2 .debug_pubnames 0000006d  00000000  00000000  000002bc  2**0
                   CONTENTS, READONLY, DEBUGGING
-  3 .debug_info   00000291  00000000  00000000  00000329  2**0
+  3 .debug_info   00000294  00000000  00000000  00000329  2**0
                   CONTENTS, READONLY, DEBUGGING
-  4 .debug_abbrev 0000018c  00000000  00000000  000005ba  2**0
+  4 .debug_abbrev 00000164  00000000  00000000  000005bd  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_line   00000484  00000000  00000000  00000746  2**0
+  5 .debug_line   0000047c  00000000  00000000  00000721  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_frame  00000090  00000000  00000000  00000bcc  2**2
+  6 .debug_frame  00000090  00000000  00000000  00000ba0  2**2
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_str    00000142  00000000  00000000  00000c5c  2**0
+  7 .debug_str    00000142  00000000  00000000  00000c30  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_loc    0000022c  00000000  00000000  00000d9e  2**0
+  8 .debug_loc    0000022c  00000000  00000000  00000d72  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_ranges 00000080  00000000  00000000  00000fca  2**0
+  9 .debug_ranges 00000080  00000000  00000000  00000f9e  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
 
 00001d00 <main>:
-register uint8_t timOverflCnt __asm__("r15"); // the number of timer1 overflows
+# define UART_SRL UBRR3L
+# define UART_UDR UDR3
 #endif
-
 
 /* main program starts here */
 int main(void) {
     1d00:	11 24       	eor	r1, r1
+#if defined(__AVR_ATmega8__) || defined (__AVR_ATmega32__)
+  SP=RAMEND;  // This is done by hardware reset
 #endif
-
-  uint8_t ch;
 
   // Adaboot no-wait mod
   ch = MCUSR;
@@ -48,9 +48,8 @@ int main(void) {
     appStart();
   }
 #else
-    if (!(ch & _BV(EXTRF)))
+    if (!(ch & _BV(EXTRF))) appStart();
     1d06:	81 ff       	sbrs	r24, 1
-      appStart();
     1d08:	06 d1       	rcall	.+524    	; 0x1f16 <appStart>
 #endif
 
@@ -67,16 +66,16 @@ int main(void) {
 #endif
 #endif
 
+#if (LED_START_FLASHES > 0) || defined(LED_DATA_FLASH)
+  /* Set LED pin as output */
+  LED_DDR |= _BV(LED);
+    1d12:	d4 9a       	sbi	0x1a, 4	; 26
+#endif
+
 #ifdef SOFT_UART
   /* Set TX pin as output */
   UART_DDR |= _BV(UART_TX_BIT);
-    1d12:	d2 9a       	sbi	0x1a, 2	; 26
-#endif
-
-#if !defined(BLUECONTROLLER) 
-  /* Set LED pin as output */
-  LED_DDR |= LED_DDR_VAL;
-    1d14:	d4 9a       	sbi	0x1a, 4	; 26
+    1d14:	d2 9a       	sbi	0x1a, 2	; 26
     1d16:	86 e0       	ldi	r24, 0x06	; 6
 }
 
@@ -101,7 +100,7 @@ void flash_led(uint8_t count) {
     while(!(TIFR1 & _BV(TOV1)));
     1d24:	58 9b       	sbis	0x0b, 0	; 11
     1d26:	fe cf       	rjmp	.-4      	; 0x1d24 <main+0x24>
-#ifdef __AVR_ATmega8__
+#if defined(__AVR_ATmega8__)  || defined (__AVR_ATmega32__)
     LED_PORT ^= _BV(LED);
 #else
     LED_PIN |= _BV(LED);
@@ -132,7 +131,7 @@ void watchdogReset() {
         __boot_page_fill_short((uint16_t)(void*)addrPtr,a);
         addrPtr += 2;
       } while (--ch);
-      
+
       // Write from programming buffer
       __boot_page_write_short((uint16_t)(void*)address);
     1d34:	85 e0       	ldi	r24, 0x05	; 5
@@ -341,9 +340,9 @@ void watchdogReset() {
     1e1c:	88 27       	eor	r24, r24
     1e1e:	82 2b       	or	r24, r18
     1e20:	93 2b       	or	r25, r19
-register uint8_t timOverflCnt __asm__("r15"); // the number of timer1 overflows
+# define UART_SRL UBRR3L
+# define UART_UDR UDR3
 #endif
-
 
 /* main program starts here */
 int main(void) {
@@ -367,7 +366,7 @@ int main(void) {
     1e34:	a2 34       	cpi	r26, 0x42	; 66
     1e36:	bf 07       	cpc	r27, r31
     1e38:	51 f7       	brne	.-44     	; 0x1e0e <main+0x10e>
-      
+
       // Write from programming buffer
       __boot_page_write_short((uint16_t)(void*)address);
     1e3a:	f7 01       	movw	r30, r14
@@ -387,8 +386,7 @@ int main(void) {
     1e48:	84 37       	cpi	r24, 0x74	; 116
     1e4a:	59 f5       	brne	.+86     	; 0x1ea2 <main+0x1a2>
       // READ PAGE - we only read flash
-
-      getch();			/* getlen */
+      getch();			/* getlen() */
     1e4c:	4c d0       	rcall	.+152    	; 0x1ee6 <getch>
       length = getch();
     1e4e:	4b d0       	rcall	.+150    	; 0x1ee6 <getch>
@@ -436,9 +434,9 @@ int main(void) {
       } while (--length);
     1e90:	01 50       	subi	r16, 0x01	; 1
     1e92:	19 f7       	brne	.-58     	; 0x1e5a <main+0x15a>
-register uint8_t timOverflCnt __asm__("r15"); // the number of timer1 overflows
+# define UART_SRL UBRR3L
+# define UART_UDR UDR3
 #endif
-
 
 /* main program starts here */
 int main(void) {
@@ -470,7 +468,7 @@ int main(void) {
     1eb0:	8c e0       	ldi	r24, 0x0C	; 12
     1eb2:	69 cf       	rjmp	.-302    	; 0x1d86 <main+0x86>
     }
-    else if (ch == 'Q') {
+    else if (ch == STK_LEAVE_PROGMODE) { /* 'Q' */
     1eb4:	81 35       	cpi	r24, 0x51	; 81
     1eb6:	21 f4       	brne	.+8      	; 0x1ec0 <main+0x1c0>
       // Adaboot no-wait mod
@@ -495,8 +493,8 @@ int main(void) {
 00001ec8 <putch>:
 void putch(char ch) {
 #ifndef SOFT_UART
-  while (!(UCSR0A & _BV(UDRE0)));
-  UDR0 = ch;
+  while (!(UART_SRA & _BV(UDRE0)));
+  UART_UDR = ch;
 #else
   __asm__ __volatile__ (
     1ec8:	2a e0       	ldi	r18, 0x0A	; 10

@@ -1,21 +1,29 @@
 #!/bin/bash
 make clean
+#
+#  buildable platforms of somewhat questionable support level
 make virboot328
 make lilypad
 make lilypad_resonator
 make pro8
 make pro16
 make pro20
-make diecimila
 make ng
 make arduinobt168
 make atmega328
 make atmega328_pro8
 make sanguino
 make mega
-make atmega8
 make atmega88
 make luminet
+make diecimila
+make bluec88_19200
 make bluec88_115200
 make bluec328_19200
 make bluec328_115200
+#
+# The "big three" standard bootloaders.
+# These need to be built AFTER the platforms, or they'll get removed
+make atmega8
+make atmega168
+make atmega328

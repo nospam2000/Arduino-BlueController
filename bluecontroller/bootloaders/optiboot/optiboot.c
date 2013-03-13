@@ -3,6 +3,12 @@
 /*                                                        */
 /* http://optiboot.googlecode.com                         */
 /*                                                        */
+/* Arduino-maintained version : See README.TXT            */
+/* http://code.google.com/p/arduino/                      */
+/*  It is the intent that changes not relevant to the     */
+/*  Arduino production envionment get moved from the      */
+/*  optiboot project to the arduino project in "lumps."   */
+/*                                                        */
 /* Heavily optimised bootloader that is faster and        */
 /* smaller than the Arduino standard bootloader           */
 /*                                                        */
@@ -27,15 +33,21 @@
 /*   ATmega328P based devices (Duemilanove etc)           */
 /*   BlueController with ATmega88PA and ATmega328P        */
 /*                                                        */
-/* Alpha test                                             */
+/* Beta test (believed working.)                          */
+/*   ATmega8 based devices (Arduino legacy)               */
+/*   ATmega328 non-picopower devices                      */
+/*   ATmega644P based devices (Sanguino)                  */
+/*   ATmega1284P based devices                            */
 /*   ATmega1280 based devices (Arduino Mega)              */
 /*                                                        */
+/* Alpha test                                             */
+/*   ATmega32                                             */
+/*                                                        */
 /* Work in progress:                                      */
-/*   ATmega644P based devices (Sanguino)                  */
 /*   ATtiny84 based devices (Luminet)                     */
 /*                                                        */
 /* Does not support:                                      */
-/*   USB based devices (eg. Teensy)                       */
+/*   USB based devices (eg. Teensy, Leonardo)             */
 /*                                                        */
 /* Assumptions:                                           */
 /*   The code makes several assumptions that reduce the   */
@@ -111,6 +123,30 @@
 /* Bootloader timeout period, in milliseconds.            */
 /* 500,1000,2000,4000,8000 supported.                     */
 /*                                                        */
+/* UART:                                                  */
+/* UART number (0..n) for devices with more than          */
+/* one hardware uart (644P, 1284P, etc)                   */
+/*                                                        */
+/**********************************************************/
+
+/**********************************************************/
+/* Version Numbers!                                       */
+/*                                                        */
+/* Arduino Optiboot now includes this Version number in   */
+/* the source and object code.                            */
+/*                                                        */
+/* Version 3 was released as zip from the optiboot        */
+/*  repository and was distributed with Arduino 0022.     */
+/* Version 4 starts with the arduino repository commit    */
+/*  that brought the arduino repository up-to-date with   */
+/*  the optiboot source tree changes since v3.            */
+/* Version 5 was created at the time of the new Makefile  */
+/*  structure (Mar, 2013), even though no binaries changed*/
+/* It would be good if versions implemented outside the   */
+/*  official repository used an out-of-seqeunce version   */
+/*  number (like 104.6 if based on based on 4.5) to       */
+/*  prevent collisions.                                   */
+/*                                                        */
 /**********************************************************/
 
 #include <inttypes.h>
@@ -120,6 +156,7 @@
 // <avr/boot.h> uses sts instructions, but this version uses out instructions
 // This saves cycles and program memory.
 #include "boot.h"
+
 
 // We don't use <avr/wdt.h> as those routines have interrupt overhead we don't need.
 
@@ -150,13 +187,31 @@
 #endif
 #endif
 
+#ifndef UART
+#define UART 0
+#endif
+
+#if 0
 /* Switch in soft UART for hard baud rates */
-// Michael.Dreher42: I don't understand why low baudrates should always use SOFT_UART. I need 19200 bps@8Mhz with hw UART => let the Makefile decide!
-//#if (F_CPU/BAUD_RATE) > 280 // > 57600 for 16MHz
-//#ifndef SOFT_UART
-//#define SOFT_UART
-//#endif
-//#endif
+/*
+ * I don't understand what this was supposed to accomplish, where the
+ * constant "280" came from, or why automatically (and perhaps unexpectedly)
+ * switching to a soft uart is a good thing, so I'm undoing this in favor
+ * of a range check using the same calc used to config the BRG...
+ */
+#if (F_CPU/BAUD_RATE) > 280 // > 57600 for 16MHz
+#ifndef SOFT_UART
+#define SOFT_UART
+#endif
+#endif
+#else // 0
+#if (F_CPU + BAUD_RATE * 4L) / (BAUD_RATE * 8L) - 1 > 250
+#error Unachievable baud rate (too slow) BAUD_RATE 
+#endif // baud rate slow check
+#if (F_CPU + BAUD_RATE * 4L) / (BAUD_RATE * 8L) - 1 < 3
+#error Unachievable baud rate (too fast) BAUD_RATE 
+#endif // baud rate fastn check
+#endif
 
 /* Watchdog settings */
 #define WATCHDOG_OFF    (0)
@@ -177,12 +232,13 @@
 /* The main function is in init9, which removes the interrupt vector table */
 /* we don't need. It is also 'naked', which means the compiler does not    */
 /* generate any entry or exit code itself. */
-int main(void) __attribute__ ((naked)) __attribute__ ((section (".init9")));
+int main(void) __attribute__ ((OS_main)) __attribute__ ((section (".init9")));
 void putch(char);
 uint8_t getch(void);
 static inline void getNch(uint8_t); /* "static inline" is a compiler hint to reduce code size */
 void verifySpace();
 static inline void flash_led(uint8_t);
+uint8_t getLen();
 static inline void watchdogReset();
 static inline void extendWatchdogPeriodAfterStartup();
 void watchdogConfig(uint8_t x);
@@ -191,13 +247,34 @@ void uartDelay() __attribute__ ((naked));
 #endif
 void appStart() __attribute__ ((naked));
 
+/*
+ * NRWW memory
+ * Addresses below NRWW (Non-Read-While-Write) can be programmed while
+ * continuing to run code from flash, slightly speeding up programming
+ * time.  Beware that Atmel data sheets specify this as a WORD address,
+ * while optiboot will be comparing against a 16-bit byte address.  This
+ * means that on a part with 128kB of memory, the upper part of the lower
+ * 64k will get NRWW processing as well, even though it doesn't need it.
+ * That's OK.  In fact, you can disable the overlapping processing for
+ * a part entirely by setting NRWWSTART to zero.  This reduces code
+ * space a bit, at the expense of being slightly slower, overall.
+ *
+ * RAMSTART should be self-explanatory.  It's bigger on parts with a
+ * lot of peripheral registers.
+ */
 #if defined(__AVR_ATmega168__)
 #define RAMSTART (0x100)
 #define NRWWSTART (0x3800)
-#elif defined(__AVR_ATmega328P__)
+#elif defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32__)
 #define RAMSTART (0x100)
 #define NRWWSTART (0x7000)
 #elif defined (__AVR_ATmega644P__)
+#define RAMSTART (0x100)
+#define NRWWSTART (0xE000)
+// correct for a bug in avr-libc
+#undef SIGNATURE_2
+#define SIGNATURE_2 0x0A
+#elif defined (__AVR_ATmega1284P__)
 #define RAMSTART (0x100)
 #define NRWWSTART (0xE000)
 #elif defined(__AVR_ATtiny84__)
@@ -232,12 +309,55 @@ register uint8_t blueCAvrdudeSynced __asm__("r13"); // 1: got initial sync seque
 register uint8_t timOverflCnt __asm__("r15"); // the number of timer1 overflows
 #endif
 
+/*
+ * Handle devices with up to 4 uarts (eg m1280.)  Rather inelegantly.
+ * Note that mega8/m32 still needs special handling, because ubrr is handled
+ * differently.
+ */
+#if UART == 0
+# define UART_SRA UCSR0A
+# define UART_SRB UCSR0B
+# define UART_SRC UCSR0C
+# define UART_SRL UBRR0L
+# define UART_UDR UDR0
+#elif UART == 1
+#if !defined(UDR1)
+#error UART == 1, but no UART1 on device
+#endif
+# define UART_SRA UCSR1A
+# define UART_SRB UCSR1B
+# define UART_SRC UCSR1C
+# define UART_SRL UBRR1L
+# define UART_UDR UDR1
+#elif UART == 2
+#if !defined(UDR2)
+#error UART == 2, but no UART2 on device
+#endif
+# define UART_SRA UCSR2A
+# define UART_SRB UCSR2B
+# define UART_SRC UCSR2C
+# define UART_SRL UBRR2L
+# define UART_UDR UDR2
+#elif UART == 3
+#if !defined(UDR1)
+#error UART == 3, but no UART3 on device
+#endif
+# define UART_SRA UCSR3A
+# define UART_SRB UCSR3B
+# define UART_SRC UCSR3C
+# define UART_SRL UBRR3L
+# define UART_UDR UDR3
+#endif
 
 /* main program starts here */
 int main(void) {
+  uint8_t ch;
+
   /*
    * Making these local and in registers prevents the need for initializing
    * them, and also saves space because code no longer stores to memory.
+   * (initializing address keeps the compiler happy, but isn't really
+   *  necessary, and uses 4 bytes of flash.)
    */
   register uint16_t address;
   register uint8_t  length;
@@ -251,19 +371,10 @@ int main(void) {
   //
   // If not, uncomment the following instructions:
   // cli();
-  // SP=RAMEND;  // This is done by hardware reset
-  /*
-   * Since we've supressed the normal startup code, we have to initialize
-   * A1 (__zero_reg__) so that it will contain 0 as expected.  Apparently
-   * there is no guarantee that GP regs are clear on either PWRUP or RST.
-   */
   asm volatile ("clr __zero_reg__");
-
-#ifdef __AVR_ATmega8__
+#if defined(__AVR_ATmega8__) || defined (__AVR_ATmega32__)
   SP=RAMEND;  // This is done by hardware reset
 #endif
-
-  uint8_t ch;
 
   // Adaboot no-wait mod
   ch = MCUSR;
@@ -286,8 +397,7 @@ int main(void) {
     appStart();
   }
 #else
-    if (!(ch & _BV(EXTRF)))
-      appStart();
+    if (!(ch & _BV(EXTRF))) appStart();
 #endif
 
   // Set up watchdog to trigger after 1000 ms
@@ -298,27 +408,27 @@ int main(void) {
   TCCR1B = _BV(CS12) | _BV(CS10); // div 1024
 #endif
 #ifndef SOFT_UART
-#ifdef __AVR_ATmega8__
+#if defined(__AVR_ATmega8__) || defined (__AVR_ATmega32__)
   UCSRA = _BV(U2X); //Double speed mode USART
   UCSRB = _BV(RXEN) | _BV(TXEN);  // enable Rx & Tx
   UCSRC = _BV(URSEL) | _BV(UCSZ1) | _BV(UCSZ0);  // config USART; 8N1
   UBRRL = (uint8_t)( (F_CPU + BAUD_RATE * 4L) / (BAUD_RATE * 8L) - 1 );
 #else
-  UCSR0A = _BV(U2X0); //Double speed mode USART0
-  UCSR0B = _BV(RXEN0) | _BV(TXEN0);
-  UCSR0C = _BV(UCSZ00) | _BV(UCSZ01);
-  UBRR0L = (uint8_t)( (F_CPU + BAUD_RATE * 4L) / (BAUD_RATE * 8L) - 1 );
+  UART_SRA = _BV(U2X0); //Double speed mode USART0
+  UART_SRB = _BV(RXEN0) | _BV(TXEN0);
+  UART_SRC = _BV(UCSZ00) | _BV(UCSZ01);
+  UART_SRL = (uint8_t)( (F_CPU + BAUD_RATE * 4L) / (BAUD_RATE * 8L) - 1 );
 #endif
+#endif
+
+#if (LED_START_FLASHES > 0) || defined(LED_DATA_FLASH)
+  /* Set LED pin as output */
+  LED_DDR |= _BV(LED);
 #endif
 
 #ifdef SOFT_UART
   /* Set TX pin as output */
   UART_DDR |= _BV(UART_TX_BIT);
-#endif
-
-#if !defined(BLUECONTROLLER) 
-  /* Set LED pin as output */
-  LED_DDR |= LED_DDR_VAL;
 #endif
 
 #if LED_START_FLASHES > 0
@@ -430,7 +540,7 @@ int main(void) {
         __boot_page_fill_short((uint16_t)(void*)addrPtr,a);
         addrPtr += 2;
       } while (--ch);
-      
+
       // Write from programming buffer
       __boot_page_write_short((uint16_t)(void*)address);
       boot_spm_busy_wait();
@@ -446,8 +556,7 @@ int main(void) {
     /* Read memory block mode, length is big endian.  */
     else if(ch == STK_READ_PAGE) {
       // READ PAGE - we only read flash
-
-      getch();			/* getlen */
+      getch();			/* getlen() */
       length = getch();
       getch();
 
@@ -489,7 +598,7 @@ int main(void) {
       putch(SIGNATURE_1);
       putch(SIGNATURE_2);
     }
-    else if (ch == 'Q') {
+    else if (ch == STK_LEAVE_PROGMODE) { /* 'Q' */
       // Adaboot no-wait mod
       verifySpace();
       watchdogConfig(WATCHDOG_64MS); // 16ms was not enough to send the result back to avrdude
@@ -505,8 +614,8 @@ int main(void) {
 
 void putch(char ch) {
 #ifndef SOFT_UART
-  while (!(UCSR0A & _BV(UDRE0)));
-  UDR0 = ch;
+  while (!(UART_SRA & _BV(UDRE0)));
+  UART_UDR = ch;
 #else
   __asm__ __volatile__ (
     "   com %[ch]\n" // ones complement, carry set
@@ -539,7 +648,7 @@ uint8_t getch(void) {
   watchdogReset();
 
 #ifdef LED_DATA_FLASH
-#ifdef __AVR_ATmega8__
+#if defined(__AVR_ATmega8__) || defined (__AVR_ATmega32__)
   LED_PORT ^= _BV(LED);
 #else
   LED_PIN |= _BV(LED);
@@ -555,7 +664,7 @@ uint8_t getch(void) {
     "   rcall uartDelay\n"              // Wait 1 bit period
     "   clc\n"
     "   sbic  %[uartPin],%[uartBit]\n"
-    "   sec\n"                          
+    "   sec\n"
     "   dec   %[bitCnt]\n"
     "   breq  3f\n"
     "   ror   %[ch]\n"
@@ -571,18 +680,31 @@ uint8_t getch(void) {
       "r25"
 );
 #else
-  while(!(UCSR0A & _BV(RXC0)))
+  while(!(UART_SRA & _BV(RXC0)))
   {
 #if defined(BLUECONTROLLER) 
     extendWatchdogPeriodAfterStartup();
 #endif
   }
-
-  ch = UDR0;
+#if !defined(BLUECONTROLLER)
+  if (!(UART_SRA & _BV(FE0))) {
+      /*
+       * A Framing Error indicates (probably) that something is talking
+       * to us at the wrong bit rate.  Assume that this is because it
+       * expects to be talking to the application, and DON'T reset the
+       * watchdog.  This should cause the bootloader to abort and run
+       * the application "soon", if it keeps happening.  (Note that we
+       * don't care that an invalid char is returned...)
+       */
+    watchdogReset();
+  }
+#endif
+  
+  ch = UART_UDR;
 #endif
 
 #ifdef LED_DATA_FLASH
-#ifdef __AVR_ATmega8__
+#if defined(__AVR_ATmega8__) || defined (__AVR_ATmega32__)
   LED_PORT ^= _BV(LED);
 #else
   LED_PIN |= _BV(LED);
@@ -593,7 +715,7 @@ uint8_t getch(void) {
 }
 
 #ifdef SOFT_UART
-// AVR350 equation: #define UART_B_VALUE (((F_CPU/BAUD_RATE)-23)/6)
+// AVR305 equation: #define UART_B_VALUE (((F_CPU/BAUD_RATE)-23)/6)
 // Adding 3 to numerator simulates nearest rounding for more accurate baud rates
 #define UART_B_VALUE (((F_CPU/BAUD_RATE)-20)/6)
 #if UART_B_VALUE > 255
@@ -639,7 +761,7 @@ void flash_led(uint8_t count) {
     TCNT1 = -(F_CPU/(1024*16));
     TIFR1 = _BV(TOV1);
     while(!(TIFR1 & _BV(TOV1)));
-#ifdef __AVR_ATmega8__
+#if defined(__AVR_ATmega8__)  || defined (__AVR_ATmega32__)
     LED_PORT ^= _BV(LED);
 #else
     LED_PIN |= _BV(LED);
