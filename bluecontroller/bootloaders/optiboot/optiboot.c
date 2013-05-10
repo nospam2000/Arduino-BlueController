@@ -380,6 +380,13 @@ int main(void) {
   ch = MCUSR;
   MCUSR = 0;
 
+#if defined(OSCCAL_VALUE) && (OSCCAL_VALUE != 0)
+// this is a hack to make the baud rate 115200 usable with an 8Mhz RC Oscillator which normally gives a
+// baud rate error of 3.5% less than the correct UART baud rate
+// this values has to be adapted for each single board
+OSCCAL = OSCCAL_VALUE; // compensate baud rate error at 115200 baud for internal 8Mhz oscillator 
+#endif
+
 #if defined(BLUECONTROLLER) 
   BLUEC_BTN_PORT |= _BV(BLUEC_BTN); // enable pull-up for BlueController button 
   //BLUEC_BT_RESET_PORT |= _BV(BLUEC_BT_RESET); // set BlueController BTM-222 RESET line to HIGH/pullup-enable
@@ -408,6 +415,7 @@ int main(void) {
   TCCR1B = _BV(CS12) | _BV(CS10); // div 1024
 #endif
 #ifndef SOFT_UART
+
 #if defined(__AVR_ATmega8__) || defined (__AVR_ATmega32__)
   UCSRA = _BV(U2X); //Double speed mode USART
   UCSRB = _BV(RXEN) | _BV(TXEN);  // enable Rx & Tx

@@ -73,6 +73,7 @@ int main(void) {
     1e18:	8e bd       	out	0x2e, r24	; 46
 #endif
 #ifndef SOFT_UART
+
 #if defined(__AVR_ATmega8__) || defined (__AVR_ATmega32__)
   UCSRA = _BV(U2X); //Double speed mode USART
     1e1a:	82 e0       	ldi	r24, 0x02	; 2

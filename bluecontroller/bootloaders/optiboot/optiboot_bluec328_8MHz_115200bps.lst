@@ -43,6 +43,9 @@ int main(void) {
     7e02:	84 b7       	in	r24, 0x34	; 52
   MCUSR = 0;
     7e04:	14 be       	out	0x34, r1	; 52
+// this values has to be adapted for each single board
+OSCCAL = OSCCAL_VALUE; // compensate baud rate error at 115200 baud for internal 8Mhz oscillator 
+#endif
 
 #if defined(BLUECONTROLLER) 
   BLUEC_BTN_PORT |= _BV(BLUEC_BTN); // enable pull-up for BlueController button 
