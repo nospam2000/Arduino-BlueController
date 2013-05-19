@@ -609,7 +609,9 @@ OSCCAL = OSCCAL_VALUE; // compensate baud rate error at 115200 baud for internal
     else if (ch == STK_LEAVE_PROGMODE) { /* 'Q' */
       // Adaboot no-wait mod
       verifySpace();
-      watchdogConfig(WATCHDOG_64MS); // the STK_OK response must be send after this line, so 16MS was a bit short
+      putch(STK_OK);
+      watchdogConfig(WATCHDOG_16MS); // the STK_OK response must be send after this line, so 16MS was a bit short
+      for(;;) {} // endless loop until watchdog reset
     }
     else {
       // This covers the response to commands like STK_ENTER_PROGMODE
