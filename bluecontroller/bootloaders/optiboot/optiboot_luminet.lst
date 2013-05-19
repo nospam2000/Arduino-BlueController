@@ -126,8 +126,8 @@ void watchdogReset() {
     if(ch == STK_GET_PARAMETER) {
       // GET PARAMETER returns a generic 0x03 reply - enough to keep Avrdude happy
       getNch(1);
-    1d30:	cc 24       	eor	r12, r12
-    1d32:	c3 94       	inc	r12
+    1d30:	bb 24       	eor	r11, r11
+    1d32:	b3 94       	inc	r11
         __boot_page_fill_short((uint16_t)(void*)addrPtr,a);
         addrPtr += 2;
       } while (--ch);
@@ -135,7 +135,7 @@ void watchdogReset() {
       // Write from programming buffer
       __boot_page_write_short((uint16_t)(void*)address);
     1d34:	85 e0       	ldi	r24, 0x05	; 5
-    1d36:	b8 2e       	mov	r11, r24
+    1d36:	a8 2e       	mov	r10, r24
         vect -= 4; // Instruction is a relative jump (rjmp), so recalculate.
         buff[8] = vect & 0xff;
         buff[9] = vect >> 8;
@@ -143,10 +143,10 @@ void watchdogReset() {
         // Add jump to bootloader at RESET vector
         buff[0] = 0x7f;
     1d38:	0f e7       	ldi	r16, 0x7F	; 127
-    1d3a:	a0 2e       	mov	r10, r16
+    1d3a:	d0 2e       	mov	r13, r16
         buff[1] = 0xce; // rjmp 0x1d00 instruction
     1d3c:	1e ec       	ldi	r17, 0xCE	; 206
-    1d3e:	d1 2e       	mov	r13, r17
+    1d3e:	c1 2e       	mov	r12, r17
 #endif
 
   /* Forever loop */
@@ -308,9 +308,9 @@ void watchdogReset() {
 
         // Add jump to bootloader at RESET vector
         buff[0] = 0x7f;
-    1dfa:	a0 92 02 01 	sts	0x0102, r10
+    1dfa:	d0 92 02 01 	sts	0x0102, r13
         buff[1] = 0xce; // rjmp 0x1d00 instruction
-    1dfe:	d0 92 03 01 	sts	0x0103, r13
+    1dfe:	c0 92 03 01 	sts	0x0103, r12
       }
 #endif
 
@@ -355,7 +355,7 @@ int main(void) {
         __boot_page_fill_short((uint16_t)(void*)addrPtr,a);
     1e24:	fa 01       	movw	r30, r20
     1e26:	0c 01       	movw	r0, r24
-    1e28:	c7 be       	out	0x37, r12	; 55
+    1e28:	b7 be       	out	0x37, r11	; 55
     1e2a:	e8 95       	spm
     1e2c:	11 24       	eor	r1, r1
         addrPtr += 2;
@@ -370,7 +370,7 @@ int main(void) {
       // Write from programming buffer
       __boot_page_write_short((uint16_t)(void*)address);
     1e3a:	f7 01       	movw	r30, r14
-    1e3c:	b7 be       	out	0x37, r11	; 55
+    1e3c:	a7 be       	out	0x37, r10	; 55
     1e3e:	e8 95       	spm
       boot_spm_busy_wait();
     1e40:	07 b6       	in	r0, 0x37	; 55
@@ -474,11 +474,10 @@ int main(void) {
       // Adaboot no-wait mod
       verifySpace();
     1eb8:	35 d0       	rcall	.+106    	; 0x1f24 <verifySpace>
-      watchdogConfig(WATCHDOG_64MS); // 16ms was not enough to send the result back to avrdude
+      watchdogConfig(WATCHDOG_64MS); // the STK_OK response must be send after this line, so 16MS was a bit short
     1eba:	8a e0       	ldi	r24, 0x0A	; 10
     1ebc:	28 d0       	rcall	.+80     	; 0x1f0e <watchdogConfig>
-    1ebe:	ff cf       	rjmp	.-2      	; 0x1ebe <main+0x1be>
-      for(;;) {} // endless loop, waiting for hardware reset
+    1ebe:	01 c0       	rjmp	.+2      	; 0x1ec2 <main+0x1c2>
     }
     else {
       // This covers the response to commands like STK_ENTER_PROGMODE

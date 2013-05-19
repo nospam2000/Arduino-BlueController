@@ -112,22 +112,22 @@ OSCCAL = OSCCAL_VALUE; // compensate baud rate error at 115200 baud for internal
         a = *bufPtr++;
         a |= (*bufPtr++) << 8;
         __boot_page_fill_short((uint16_t)(void*)addrPtr,a);
-    3e48:	66 24       	eor	r6, r6
-    3e4a:	63 94       	inc	r6
+    3e48:	77 24       	eor	r7, r7
+    3e4a:	73 94       	inc	r7
         addrPtr += 2;
       } while (--ch);
 
       // Write from programming buffer
       __boot_page_write_short((uint16_t)(void*)address);
     3e4c:	15 e0       	ldi	r17, 0x05	; 5
-    3e4e:	81 2e       	mov	r8, r17
+    3e4e:	61 2e       	mov	r6, r17
       boot_spm_busy_wait();
 
 #if defined(RWWSRE)
       // Reenable read access to flash
       boot_rww_enable();
     3e50:	b1 e1       	ldi	r27, 0x11	; 17
-    3e52:	7b 2e       	mov	r7, r27
+    3e52:	8b 2e       	mov	r8, r27
       // If we are in NRWW section, page erase has to be delayed until now.
       // Todo: Take RAMPZ into account
 #if !defined(NRWWSECTIONFAVORSIZE) 
@@ -320,7 +320,7 @@ int main(void) {
         __boot_page_fill_short((uint16_t)(void*)addrPtr,a);
     3f04:	fa 01       	movw	r30, r20
     3f06:	0c 01       	movw	r0, r24
-    3f08:	67 be       	out	0x37, r6	; 55
+    3f08:	77 be       	out	0x37, r7	; 55
     3f0a:	e8 95       	spm
     3f0c:	11 24       	eor	r1, r1
         addrPtr += 2;
@@ -335,7 +335,7 @@ int main(void) {
       // Write from programming buffer
       __boot_page_write_short((uint16_t)(void*)address);
     3f1a:	f5 01       	movw	r30, r10
-    3f1c:	87 be       	out	0x37, r8	; 55
+    3f1c:	67 be       	out	0x37, r6	; 55
     3f1e:	e8 95       	spm
       boot_spm_busy_wait();
     3f20:	07 b6       	in	r0, 0x37	; 55
@@ -345,7 +345,7 @@ int main(void) {
 #if defined(RWWSRE)
       // Reenable read access to flash
       boot_rww_enable();
-    3f26:	77 be       	out	0x37, r7	; 55
+    3f26:	87 be       	out	0x37, r8	; 55
     3f28:	e8 95       	spm
     3f2a:	27 c0       	rjmp	.+78     	; 0x3f7a <main+0x17a>
 
@@ -424,11 +424,10 @@ int main(void) {
       // Adaboot no-wait mod
       verifySpace();
     3f72:	2f d0       	rcall	.+94     	; 0x3fd2 <verifySpace>
-      watchdogConfig(WATCHDOG_64MS); // 16ms was not enough to send the result back to avrdude
+      watchdogConfig(WATCHDOG_64MS); // the STK_OK response must be send after this line, so 16MS was a bit short
     3f74:	8a e0       	ldi	r24, 0x0A	; 10
     3f76:	20 d0       	rcall	.+64     	; 0x3fb8 <watchdogConfig>
-    3f78:	ff cf       	rjmp	.-2      	; 0x3f78 <main+0x178>
-      for(;;) {} // endless loop, waiting for hardware reset
+    3f78:	01 c0       	rjmp	.+2      	; 0x3f7c <main+0x17c>
     }
     else {
       // This covers the response to commands like STK_ENTER_PROGMODE

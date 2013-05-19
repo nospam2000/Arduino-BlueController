@@ -137,8 +137,8 @@ void watchdogReset() {
     if(ch == STK_GET_PARAMETER) {
       // GET PARAMETER returns a generic 0x03 reply - enough to keep Avrdude happy
       getNch(1);
-   1fc4c:	bb 24       	eor	r11, r11
-   1fc4e:	b3 94       	inc	r11
+   1fc4c:	cc 24       	eor	r12, r12
+   1fc4e:	c3 94       	inc	r12
         __boot_page_fill_short((uint16_t)(void*)addrPtr,a);
         addrPtr += 2;
       } while (--ch);
@@ -146,7 +146,7 @@ void watchdogReset() {
       // Write from programming buffer
       __boot_page_write_short((uint16_t)(void*)address);
    1fc50:	b5 e0       	ldi	r27, 0x05	; 5
-   1fc52:	cb 2e       	mov	r12, r27
+   1fc52:	bb 2e       	mov	r11, r27
       boot_spm_busy_wait();
 
 #if defined(RWWSRE)
@@ -335,7 +335,7 @@ int main(void) {
         __boot_page_fill_short((uint16_t)(void*)addrPtr,a);
    1fd06:	fa 01       	movw	r30, r20
    1fd08:	0c 01       	movw	r0, r24
-   1fd0a:	b7 be       	out	0x37, r11	; 55
+   1fd0a:	c7 be       	out	0x37, r12	; 55
    1fd0c:	e8 95       	spm
    1fd0e:	11 24       	eor	r1, r1
         addrPtr += 2;
@@ -350,7 +350,7 @@ int main(void) {
       // Write from programming buffer
       __boot_page_write_short((uint16_t)(void*)address);
    1fd1c:	f7 01       	movw	r30, r14
-   1fd1e:	c7 be       	out	0x37, r12	; 55
+   1fd1e:	b7 be       	out	0x37, r11	; 55
    1fd20:	e8 95       	spm
       boot_spm_busy_wait();
    1fd22:	07 b6       	in	r0, 0x37	; 55
@@ -440,11 +440,10 @@ int main(void) {
       // Adaboot no-wait mod
       verifySpace();
    1fd70:	29 d0       	rcall	.+82     	; 0x1fdc4 <verifySpace>
-      watchdogConfig(WATCHDOG_64MS); // 16ms was not enough to send the result back to avrdude
+      watchdogConfig(WATCHDOG_64MS); // the STK_OK response must be send after this line, so 16MS was a bit short
    1fd72:	8a e0       	ldi	r24, 0x0A	; 10
    1fd74:	1a d0       	rcall	.+52     	; 0x1fdaa <watchdogConfig>
-   1fd76:	ff cf       	rjmp	.-2      	; 0x1fd76 <main+0x176>
-      for(;;) {} // endless loop, waiting for hardware reset
+   1fd76:	01 c0       	rjmp	.+2      	; 0x1fd7a <main+0x17a>
     }
     else {
       // This covers the response to commands like STK_ENTER_PROGMODE

@@ -434,11 +434,10 @@ int main(void) {
       // Adaboot no-wait mod
       verifySpace();
     3f6a:	29 d0       	rcall	.+82     	; 0x3fbe <verifySpace>
-      watchdogConfig(WATCHDOG_64MS); // 16ms was not enough to send the result back to avrdude
+      watchdogConfig(WATCHDOG_64MS); // the STK_OK response must be send after this line, so 16MS was a bit short
     3f6c:	8a e0       	ldi	r24, 0x0A	; 10
     3f6e:	1a d0       	rcall	.+52     	; 0x3fa4 <watchdogConfig>
-    3f70:	ff cf       	rjmp	.-2      	; 0x3f70 <main+0x170>
-      for(;;) {} // endless loop, waiting for hardware reset
+    3f70:	01 c0       	rjmp	.+2      	; 0x3f74 <main+0x174>
     }
     else {
       // This covers the response to commands like STK_ENTER_PROGMODE
