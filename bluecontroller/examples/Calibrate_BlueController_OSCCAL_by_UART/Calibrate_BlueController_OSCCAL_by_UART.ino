@@ -9,14 +9,21 @@
  this is normally enough.
  
  Instructions to use:
- 1. Adapt the following values in the sketch:
-    ARDUINO_SERIAL_BAUDRATE (only needed when you are not using my Bluecontroller Arduino Environment adaption)
- 2. Start the sketch and send either the character 'D' (0x44 => 3*0 bit time at the beginning) or 'B' (0x42 => 2*0 bit time at the beginning).
-    Keep on sending as long as the OSCCAL values are changing. Using 'D' will be a bit more accurate.
-    When the OSCCAL values stabilizes after some time, the calibration is finished.
- 3. Using the characters '+' and '-' you can manually change OSCCAL
- 4. Use the printed value of 'g_medianOSCCAL' to set -DOSCCAL_VALUE=xxx' in the BlueController optiboot Makefile. This will permanently set the
-    OSCCAL value of the boot loader and the value will also be active when the boot loader is exited and the main program runs
+ 1. Adapt the baud rate of Serial.begin() in the sketch source code
+ 2. Upload the sketch and let the sketch run for some 10 minutes under the temperature conditions it will be used in future.
+    For normal room temperature (20 to 25 °C) this is not so critical, but when you want to use it in a closed cabinet
+    at temperatures >40 or <5 °C this ensures better calibration.
+ 3. Connect to your board using the Arduino serial monitor or any other terminal program
+ 4. In the serial monitor send the following characters (one by one with a pause of at least 5m in between, not as one long string):
+      'D' (hex 0x44 => 3*0 bit time at the beginning)
+      'B' (hex 0x42 => 2*0 bit time at the beginning).
+    Keep on sending as long as the OSCCAL values are changing. Normally 15 charaters are enough.
+    When the OSCCAL values stabilizes after sending some characters, the calibration is finished.
+ 5. Use the printed value of 'g_medianOSCCAL' to set '-DOSCCAL_VALUE=xxx' in the BlueController optiboot Makefile
+    (replace xxx with the value of g_medianOSCCAL). This will permanently set the OSCCAL value of the boot loader
+    and the value will also be active when the boot loader is exited and the main program runs
+
+ Sending the characters '+' and '-' you can manually change OSCCAL and watch the effect on g_tDiff.
  
  Copyright (c) 2013 by Michael Dreher <michael@5dot1.de>
  This example code is in the public domain.
@@ -40,7 +47,8 @@ const uint8_t led = LED_BUILTIN;
 // this calculates the real baudrate (incl. error), not the baud rate which is used as parameter for Serial.begin()
 #define SER_MUL ((2 - (SER_DBLSPEED ? 1 : 0)) * 8)
 #define SERIALBAUDRATE (F_CPU / (SER_MUL * (SER_UBRR + 1)))
-#define SER_BIT_TIME(bits) ((((2 * bits * F_CPU) / SERIALBAUDRATE) + 1) / 2) // round up
+//#define SER_BIT_TIME(bits) ((((2 * bits * F_CPU) / SERIALBAUDRATE) + 1) / 2) // round up
+#define SER_BIT_TIME(bits) (bits * (SER_MUL * (SER_UBRR + 1))) // round up
 
 // the tolarance used for comparing bit times (+-1/10=+-10%)
 const uint8_t tolerance = 1;
