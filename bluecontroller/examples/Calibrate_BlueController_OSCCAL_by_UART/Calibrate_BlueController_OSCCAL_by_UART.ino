@@ -7,7 +7,7 @@
    original RC oscillator can be compensated but normally this is enough.
 
  Why you might need this project?
-   When your ATmega is clocked using the internal RC oscillation and you want to use baud rates >38400 bps
+   When your ATmega is clocked using the internal RC oscillatior and you want to use baud rates >38400 bps
    or when the factory calibration of OSCCAL is bad and you want to do your own calibration without additional
    hardware (e.g. STK500 programmer).
    
@@ -25,7 +25,7 @@
  Are there other solutions?
    Yes:
     - Use slower baud rates. Typical baud rates up to 38400 bps (with F_CPU=8MHz) give an error smaller than 0.2%. 
-    - Use an external osciallator which is a multiple of the baud rate (baud rate oscillator, e.g. 7,3728 or 14,7456 MHz http://www.mikrocontroller.net/articles/Baudratenquarz )
+    - Use an external crystal oscillator with a multiple of the baud rate (baud rate oscillator, e.g. 7,3728 or 14,7456 MHz http://www.mikrocontroller.net/articles/Baudratenquarz )
     - Use other ways of OSCCAL calibration (use STK500; read Atmel document AVR054; use Logic Analyzer or Oscilloscope)
    
  Why should I use this project instead of other solutions?
@@ -37,15 +37,16 @@
   - Your mcu runs with a changed clock (not at F_CPU). A perfect calibration for the 8MHz/115200 bps example above would give 
     a real clock rate of 115200 * (8*(8+1)) = 8.2944 MHz (depending on the UART clock error of your communication partner).
     For time calculations, you should use this value instead of F_CPU.
-  - I only tested it with 115200 bps and 8 MHz.
+  - I only tested it with an ATmega328P, 115200 bps and 8 MHz.
 
  How does it work?
-  The bit-time of the UART transmission is measured and compared to the setpoint value. The OSCCAL is changed
+  The bit-time of the UART transmission is measured and compared to the setpoint value. The OSCCAL value is changed to match the bit 
+  time of the communication partner.
 
  Can the solution only be used for a one time calibration or can I use it to run always in the background?
    It could be used to run always in the background but I suggest some code changes if you plan to do this.
    With the current code, the drawback is that every received byte triggers up to 10 IRQs which
-   will consume a lot of CPU time. Better would be to enable it only for some time and disable it, after the
+   will consume a lot of CPU time. It would be better to enable it only for some time and disable it, after the
    calibration has finished.
 
  Instructions to use:
