@@ -2,12 +2,12 @@
  Calibrate the OSCCAL value to match the baud rate of the communication partner as best as possible
 
  What does this project do?
-   The internal RC oscillator speed is adapted to the serial speed of the communication partner (e.g. a USB or blueetooth
+   The internal RC oscillator clock (OSCCAL) is adapted to the serial speed of the communication partner (e.g. a USB or blueetooth
    to serial converter), so that the ATmega matches the baud rate of its partner. Only deviations of +-10% of the
-   original RC oscillator can be compensated but normally this is enough.
+   original RC oscillator clock can be compensated but normally this is enough.
 
  Why you might need this project?
-   When your ATmega is clocked using the internal RC oscillatior and you want to use baud rates >38400 bps
+   When your ATmega is clocked using the internal RC oscillator and you want to use baud rates >38400 bps
    or when the factory calibration of OSCCAL is bad and you want to do your own calibration without additional
    hardware (e.g. STK500 programmer).
    
@@ -50,7 +50,7 @@
    calibration has finished.
 
  Instructions to use:
-  1. Adapt the baud rate of Serial.begin() in the sketch source code
+  1. Adapt the constant 'baudrate' at the beginning of the sketch source code (not necessary for BlueController boards)
   2. Upload the sketch and let the sketch run for some 10 minutes under the temperature and voltage conditions it will be used in future.
      For normal room temperature (20 to 25 °C) this is not so critical, but when you want to use it in a closed cabinet
      at temperatures >40 or <5 °C this ensures better calibration.
@@ -75,21 +75,27 @@
 
 #include "CalibrateOSCCAL.h"
 
+// ARDUINO_SERIAL_BAUDRATE is either defined in .../Arduino/hardware/<boardname>/variants/<variant>/pins_arduino.h
+// or you have to set it manually here when your board has no fixed baud rate defined there
+// currently only the BlueController boards define this constant
+const uint32_t baudrate ARDUINO_SERIAL_BAUDRATE;
+
 // Pin 13 has an LED connected on most Arduino boards.
 const uint8_t led = LED_BUILTIN;
 
 // the setup routine runs once when you press reset:
 void setup() {
-  // ARDUINO_SERIAL_BAUDRATE is either defined in .../Arduino/hardware/<boardname>/variants/<variant>/pins_arduino.h
-  // or you have to set it manually here when your board has no fixed baud rate defined there
-  // currently only the BlueController boards define this constant
-  Serial.begin(ARDUINO_SERIAL_BAUDRATE);
+  Serial.begin(baudrate);
   pinMode(led, OUTPUT);
 
   InitOSCCALCalibration(); // must be called _after_ Serial.begin()
 
-  TRACENAMEVAR("F_CPU", F_CPU);
-  TRACENAMEVAR("Nominal baud rate", SERIALBAUDRATE);
+  TRACENAMEVAR("Configured F_CPU", F_CPU);
+  TRACENAMEVAR("F_CPU after calibration", F_CPU_CALIBRATED(baudrate));
+  TRACENAMEVAR("Configured baud rate", baudrate);
+  TRACENAMEVAR("Baud rate calculated from UBRR0 and U2X0", SERIALBAUDRATE_FROM_UBRR);
+  TRACENAMEVAR("UBRR0", UBRR0);
+  TRACENAMEVAR("U2X0", (UCSR0A >> U2X0) & 0x01);
   TRACEVAR(g_BitTime1);
   TRACEVAR(g_BitTime1Min);
   TRACEVAR(g_BitTime1Max);
@@ -144,7 +150,7 @@ void loop() {
       Serial.print(c, HEX);
       Serial.write(' ');
       Serial.print(c, BIN);
-      Serial.println(" 01"); // start bit and state before start bit (previous stop bit or silence)
+      Serial.println(" 01"); // start bit (=0) and state before start bit (previous stop bit or silence=1).
     }
   }
 }
@@ -152,8 +158,8 @@ void loop() {
 void printOSCCAL(void)
 {
   // these values are useful for checking the baud rate with an oscilloscope or logic analyzer
-  Serial.write(0x55); // logic levels on the TXD line: 10 10101010 1
-  Serial.write(0x00); // logic levels on the TXD line:  0 00000000 1
+  Serial.write(0x55); // logic levels on the TXD line: 1...10 10101010 1
+  Serial.write(0x00); // logic levels on the TXD line:      0 00000000 1
 
   Serial.print("  OSCCAL=");
   Serial.print(OSCCAL);

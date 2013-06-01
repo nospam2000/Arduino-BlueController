@@ -37,8 +37,9 @@ extern int16_t g_tDiff;
 
 // this calculates the real baudrate (incl. error), not the baud rate which is used as parameter for Serial.begin()
 #define SER_MUL ((2 - (SER_DBLSPEED ? 1 : 0)) * 8)
-#define SERIALBAUDRATE (F_CPU / (SER_MUL * (SER_UBRR + 1)))
+#define SERIALBAUDRATE_FROM_UBRR (F_CPU / (SER_MUL * (SER_UBRR + 1)))
 #define SER_BIT_TIME(bits) (bits * (SER_MUL * (SER_UBRR + 1)))
+#define F_CPU_CALIBRATED(baudrate) (baudrate * (SER_MUL * (SER_UBRR + 1)))
 
 ////////////////////////////////////////////////////////////////////////////////
 // Helper macros
