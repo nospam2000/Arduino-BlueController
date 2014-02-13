@@ -365,6 +365,7 @@ bluec328_115200: MCU_TARGET = atmega328p
 bluec328_115200: CFLAGS += '-DBAUD_RATE=115200' '-DBLUECONTROLLER'
 #bluec328_115200: CFLAGS += '-DOSCCAL_VALUE=148' # the value 148 is for my "BlueControllerX" board
 #bluec328_115200: CFLAGS += '-DOSCCAL_VALUE=139' # the value 139 is for my "BlueController RoboTX" board
+#bluec328_115200: CFLAGS += '-DOSCCAL_VALUE=74' # the value 74 is for my "BlueController" board
 bluec328_115200: AVR_FREQ = 8000000L
 bluec328_115200: LDSECTION  = --section-start=.text=0x7e00
 bluec328_115200: $(PROGRAM)_bluec328_8MHz_115200bps.hex
@@ -393,6 +394,23 @@ bluec328_19200_isp: EFUSE = FE # BOD=1,8V (BODLEVEL0)
 bluec328_19200_isp: isp
 
 # experimental
+arduinobt328_115200: TARGET = arduinobt328_115200
+arduinobt328_115200: MCU_TARGET = atmega328p
+#arduinobt328_115200: CFLAGS += '-DLED_START_FLASHES=3' '-DBAUD_RATE=115200'
+arduinobt328_115200: CFLAGS += '-DBAUD_RATE=115200' '-DARDUINO_BT' '-DBLUECONTROLLER'
+arduinobt328_115200: AVR_FREQ = 16000000L 
+arduinobt328_115200: $(PROGRAM)_arduinobt328_115200bps.hex
+arduinobt328_115200: $(PROGRAM)_arduinobt328_115200bps.lst
+arduinobt328_115200_isp: arduinobt328_115200
+arduinobt328_115200_isp: TARGET = arduinobt328_115200
+# 512 byte boot
+arduinobt328_115200_isp: HFUSE = DE
+# Low power xtal (16MHz) 16KCK/14CK+65ms
+arduinobt328_115200_isp: LFUSE = FF
+# 2.7V brownout
+arduinobt328_115200_isp: EFUSE = 05
+arduinobt328_115200_isp: isp
+
 arduinobt168: TARGET = arduinobt168
 arduinobt168: MCU_TARGET = atmega168
 #arduinobt168: CFLAGS += '-DLED_START_FLASHES=3' '-DBAUD_RATE=115200'
