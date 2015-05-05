@@ -1,4 +1,4 @@
-# BlueController-Arduino
+# Arduino-BlueController
 Arduino support and ISP programmer for BlueController ATmega board BCA8-BTM
 BlueController is an ATmega board using an ATMega328P or ATmega88PA. Instead of a USB serial port, it uses a BTM-222 Bluetooth module which makes it similar to an Arduino-BT.
 
